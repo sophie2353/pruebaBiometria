@@ -100,6 +100,8 @@
       border: 1px solid #333; color: #fff; font-size: 0.88rem; font-family: inherit;
     }
     textarea { resize: vertical; min-height: 82px; }
+    .field-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 0.72rem; color: #a1a1aa; letter-spacing: 0.8px; text-transform: uppercase; font-weight: 600; }
 
     .meta-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
@@ -233,7 +235,10 @@
         <div><span>Fecha/Hora</span><strong id="c-time">-</strong></div>
       </div>
 
-      <input type="text" id="c-fullname" placeholder="Nombre completo para firma digital" />
+        <div class="field-wrap">
+        <label for="c-fullname" class="field-label">Nombre Completo (Firma Digital)</label>
+        <input type="text" id="c-fullname" placeholder="Ej. Sofía Martínez" />
+      </div>
       <button type="button" id="btn-sign-contract" class="action btn-white">Firmar y Entrar al Panel ➔</button>
     </section>
 
@@ -254,9 +259,12 @@
       </div>
 
       <!-- 4A. SUBIR AUDIENCIA ESCRITA -->
-      <div id="phase-audience" style="display:flex; flex-direction:column; gap:10px;">
+      <div id="phase-audience" style="display:flex; flex-direction:column; gap:12px;">
         <p style="color:#fff; font-weight:600;">Paso 1: Define tu Audiencia</p>
-        <textarea id="audience-text" placeholder="Ej: Países (US, MX), Nicho (SaaS B2B / Inmobiliaria), Ticket promedio ($2,500), Edad 25-55..."></textarea>
+        <div class="field-wrap">
+          <label for="audience-text" class="field-label">Países, Nicho, Ticket Promedio y Rango de Edad</label>
+          <textarea id="audience-text" placeholder="Ej: US, MX • SaaS B2B • $2,500 • 25-55 años"></textarea>
+        </div>
         <button type="button" id="btn-send-audience" class="action btn-white">Enviar Audiencia ➔</button>
       </div>
 
