@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S#1 • Flujo Simulado</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/jpeg" href="/icon.jpg">
+  <title>S#1 • Terminal</title>
   <meta name="theme-color" content="#000000">
   <style>
     * { box-sizing: border-box; }
@@ -14,13 +12,55 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       padding: 20px 16px 48px; display: flex; flex-direction: column; align-items: center;
     }
+
+    /* INTRO FUTURISTA: LOGO RESPIRANDO A VELOCIDAD HUMANA (4.2s) + CARGA 0-100 */
+    #intro-loader {
+      position: fixed; inset: 0; z-index: 99999; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #intro-loader.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .emblem-breath {
+      width: 82px; height: 82px; border-radius: 50%;
+      border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+      animation: humanBreath 4.2s ease-in-out infinite;
+    }
+    @keyframes humanBreath {
+      0%, 100% {
+        transform: scale(0.94);
+        opacity: 0.72;
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(255, 255, 255, 0.08);
+      }
+      50% {
+        transform: scale(1.07);
+        opacity: 1;
+        box-shadow: 0 0 0 14px rgba(255, 255, 255, 0.04), 0 0 38px rgba(255, 255, 255, 0.28);
+      }
+    }
+    .loader-percent {
+      font-size: 1.05rem; font-weight: 700; letter-spacing: 3px; font-variant-numeric: tabular-nums;
+    }
+    .loader-bar-wrap {
+      width: 180px; height: 2px; background: #1f1f1f; border-radius: 99px; overflow: hidden;
+    }
+    .loader-bar-fill {
+      height: 100%; width: 0%; background: #fff; transition: width 0.08s linear;
+    }
+    .loader-sub { font-size: 0.72rem; color: #71717a; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* ESTRUCTURA PRINCIPAL */
     .shell { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 16px; }
     .topbar {
       display: flex; justify-content: space-between; align-items: center;
       padding: 12px 16px; border-radius: 14px; background: #0a0a0a; border: 1px solid #262626;
     }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: 1.5px; }
-    .brand img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #333; }
+    .emblem-sm {
+      width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #fff;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;
+    }
     .badge {
       font-size: 0.72rem; padding: 4px 10px; border-radius: 999px;
       border: 1px solid #fff; color: #fff; font-weight: 600;
@@ -30,36 +70,37 @@
       display: flex; flex-direction: column; gap: 14px;
     }
     .hidden { display: none !important; }
-    h2 { margin: 0; font-size: 1.15rem; }
+    h2 { margin: 0; font-size: 1.12rem; }
     p { margin: 0; font-size: 0.85rem; color: #a1a1aa; line-height: 1.5; }
+
     .amount-box {
-      padding: 16px; border-radius: 12px; background: #000; border: 1px solid #333;
-      text-align: center;
+      padding: 16px; border-radius: 12px; background: #000; border: 1px solid #333; text-align: center;
     }
     .amount-box span { font-size: 0.72rem; color: #71717a; letter-spacing: 1px; display: block; }
     .amount-box strong { font-size: 1.8rem; letter-spacing: 1px; display: block; margin-top: 4px; }
 
-    /* Wallets inventadas */
     .wallet-list { display: flex; flex-direction: column; gap: 8px; }
     .wallet-opt {
       display: flex; justify-content: space-between; align-items: center;
       padding: 12px 14px; border-radius: 12px; background: #000; border: 1px solid #262626;
       color: #e4e4e7; cursor: pointer; text-align: left; font-weight: 600; font-size: 0.88rem;
-      transition: all 0.2s ease;
     }
     .wallet-opt small { color: #71717a; font-weight: 400; font-size: 0.74rem; }
     .wallet-opt.selected { background: #fff; color: #000; border-color: #fff; }
     .wallet-opt.selected small { color: #3f3f46; }
 
     .scroll-box {
-      max-height: 150px; overflow-y: auto; padding: 12px; border-radius: 10px;
+      max-height: 140px; overflow-y: auto; padding: 12px; border-radius: 10px;
       background: #000; border: 1px solid #262626; font-size: 0.8rem; color: #d4d4d8; line-height: 1.5;
     }
     .check-row { display: flex; align-items: flex-start; gap: 10px; font-size: 0.84rem; color: #e4e4e7; }
-    input[type="text"] {
+
+    input[type="text"], textarea {
       width: 100%; padding: 12px; border-radius: 10px; background: #000;
-      border: 1px solid #333; color: #fff; font-size: 0.9rem;
+      border: 1px solid #333; color: #fff; font-size: 0.88rem; font-family: inherit;
     }
+    textarea { resize: vertical; min-height: 82px; }
+
     .meta-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
       padding: 12px; border-radius: 10px; background: #000; border: 1px solid #262626; font-size: 0.78rem;
@@ -67,19 +108,29 @@
     .meta-grid span { color: #71717a; display: block; margin-bottom: 2px; }
     .meta-grid strong { color: #fff; font-size: 0.95rem; }
 
-    /* Subida de imagen desde galería */
-    .upload-box {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-      padding: 18px; border-radius: 14px; background: #000; border: 1px dashed #52525b;
-      cursor: pointer; text-align: center; transition: border-color 0.2s ease;
+    /* Panel cargando audiencia */
+    .processing-box {
+      padding: 26px 16px; border-radius: 14px; background: #000; border: 1px solid #333;
+      display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
     }
-    .upload-box:hover { border-color: #fff; }
+    .mini-breath {
+      width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 800;
+      animation: humanBreath 4.2s ease-in-out infinite;
+    }
+
+    /* Subida de imagen */
+    .upload-box {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      padding: 18px; border-radius: 14px; background: #000; border: 1px dashed #52525b;
+      cursor: pointer; text-align: center;
+    }
     .upload-preview {
       width: 100%; max-height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid #333;
     }
     .status-ok {
       padding: 10px 12px; border-radius: 10px; background: #fff; color: #000;
-      font-weight: 700; font-size: 0.85rem; text-align: center;
+      font-weight: 700; font-size: 0.84rem; text-align: center;
     }
 
     button.action {
@@ -87,27 +138,42 @@
     }
     .btn-white { background: #fff; color: #000; border: none; }
     .btn-outline { background: transparent; color: #fff; border: 1px solid #404040; }
+
     .toast {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
       width: 90%; max-width: 380px; padding: 14px 16px; border-radius: 14px;
-      background: #fff; color: #000; font-size: 0.85rem; font-weight: 600;
-      box-shadow: 0 10px 30px rgba(255,255,255,0.18); z-index: 9999; text-align: center;
+      background: #fff; color: #000; font-size: 0.85rem; font-weight: 700;
+      box-shadow: 0 10px 30px rgba(255,255,255,0.2); z-index: 9999; text-align: center;
     }
   </style>
 </head>
 <body>
+
+  <!-- INTRO FUTURISTA 0% -> 100% -->
+  <div id="intro-loader">
+    <div class="emblem-breath">S</div>
+    <div class="loader-percent" id="intro-percent">0%</div>
+    <div class="loader-bar-wrap"><div class="loader-bar-fill" id="intro-bar"></div></div>
+    <div class="loader-sub">Inicializando Terminal S#1</div>
+  </div>
+
   <div id="toast" class="toast hidden"></div>
 
   <div class="shell">
     <header class="topbar">
       <div class="brand">
-        <img src="/icon.jpg" alt="" onerror="this.style.display='none'">
+        <span class="emblem-sm">S</span>
         <span>S#1</span>
       </div>
       <span id="role-badge" class="badge">VERIFICANDO...</span>
     </header>
 
-    <!-- PASO 1: PAGO SIMULADO + SELECCIÓN DE WALLET -->
+    <!-- BANNER SOLO SI ADMIN ENTRA A INSPECCIONAR -->
+    <button type="button" id="btn-back-admin" class="action btn-outline hidden" style="padding:10px; font-size:0.8rem;">
+      ← Volver a Panel Admin
+    </button>
+
+    <!-- PASO 1: PAGO + WALLETS -->
     <section id="step-payment" class="card">
       <h2>1. Activación de Licencia</h2>
       <p>Simulación de pasarela cripto corporativa.</p>
@@ -119,7 +185,6 @@
 
       <button type="button" id="btn-open-wallets" class="action btn-white">Pagar ahora ➔</button>
 
-      <!-- Lista de Wallets inventadas (oculta hasta tocar Pagar) -->
       <div id="wallets-container" class="hidden" style="display: flex; flex-direction: column; gap: 12px;">
         <p style="color:#fff; font-weight:600;">Selecciona tu Wallet:</p>
         <div class="wallet-list">
@@ -127,7 +192,7 @@
             <span>VaultX Corporate</span><small>Red Polygon</small>
           </button>
           <button type="button" class="wallet-opt" data-wallet="Aegis Pay">
-            <span>Agis Pay</span><small>USDC Directo</small>
+            <span>Aegis Pay</span><small>USDC Directo</small>
           </button>
           <button type="button" class="wallet-opt" data-wallet="Nexus Custody">
             <span>Nexus Custody</span><small>Multisig B2B</small>
@@ -141,7 +206,7 @@
       </div>
     </section>
 
-    <!-- PASO 2: TÉRMINOS Y CONDICIONES -->
+    <!-- PASO 2: TÉRMINOS -->
     <section id="step-terms" class="card hidden">
       <h2>2. Términos y Privacidad</h2>
       <div class="status-ok" id="generated-id-banner">Pago Validado • ID Generado: -</div>
@@ -156,7 +221,7 @@
       <button type="button" id="btn-next-contract" class="action btn-white">Continuar al Contrato ➔</button>
     </section>
 
-    <!-- PASO 3: CONTRATO DIGITAL -->
+    <!-- PASO 3: CONTRATO -->
     <section id="step-contract" class="card hidden">
       <h2>3. Contrato Digital</h2>
       <p>Registro automático de identificador, wallet, IP y hora.</p>
@@ -172,15 +237,15 @@
       <button type="button" id="btn-sign-contract" class="action btn-white">Firmar y Entrar al Panel ➔</button>
     </section>
 
-    <!-- PASO 4: DASHBOARD SUPERVISOR / ADMIN + SUBIDA DE IMAGEN -->
+    <!-- PASO 4: DASHBOARD PRINCIPAL (AUDIENCIA -> CARGANDO -> IMAGEN -> MÉTRICAS) -->
     <section id="step-dashboard" class="card hidden">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2>4. Panel Activo</h2>
+        <h2>Panel de Control</h2>
         <span id="dash-id-pill" class="badge">ID: -</span>
       </div>
       <p id="dash-welcome">Sesión validada correctamente.</p>
 
-      <!-- Métricas que se actualizan al subir imagen -->
+      <!-- Métricas en vivo -->
       <div class="meta-grid">
         <div><span>Inversión Activa</span><strong id="m-spend">$0</strong></div>
         <div><span>Alcance Total</span><strong id="m-reach">0</strong></div>
@@ -188,35 +253,98 @@
         <div><span>Tráfico Activo</span><strong id="m-active">0</strong></div>
       </div>
 
-      <!-- Subir cualquier imagen de la galería -->
-      <input type="file" id="gallery-input" accept="image/*" class="hidden" />
-      <label for="gallery-input" class="upload-box">
-        <strong style="font-size:0.9rem;">↑ Subir imagen desde galería</strong>
-        <span style="font-size:0.76rem; color:#a1a1aa;">Toca para elegir cualquier foto y actualizar el panel</span>
-      </label>
+      <!-- 4A. SUBIR AUDIENCIA ESCRITA -->
+      <div id="phase-audience" style="display:flex; flex-direction:column; gap:10px;">
+        <p style="color:#fff; font-weight:600;">Paso 1: Define tu Audiencia</p>
+        <textarea id="audience-text" placeholder="Ej: Países (US, MX), Nicho (SaaS B2B / Inmobiliaria), Ticket promedio ($2,500), Edad 25-55..."></textarea>
+        <button type="button" id="btn-send-audience" class="action btn-white">Enviar Audiencia ➔</button>
+      </div>
 
-      <img id="gallery-preview" class="upload-preview hidden" alt="Vista previa" />
-      <div id="upload-status-ok" class="status-ok hidden">✓ Listo — Métricas actualizadas</div>
+      <!-- 4B. PANEL CARGANDO AUDIENCIA -->
+      <div id="phase-loading-audience" class="processing-box hidden">
+        <div class="mini-breath">S</div>
+        <strong style="font-size:0.9rem;">Procesando e inyectando audiencia...</strong>
+        <p style="font-size:0.78rem;">Calibrando segmentación en la red S#1</p>
+      </div>
 
-      <button type="button" id="btn-test-notif" class="action btn-white">Probar Notificación</button>
+      <!-- 4C. SUBIR IMAGEN (SE DESBLOQUEA DESPUÉS DE LA AUDIENCIA) -->
+      <div id="phase-image" class="hidden" style="display:flex; flex-direction:column; gap:12px;">
+        <div class="status-ok">✓ Audiencia inyectada correctamente</div>
+        <p style="color:#fff; font-weight:600;">Paso 2: Sube el creativo desde tu galería</p>
+
+        <input type="file" id="gallery-input" accept="image/*" class="hidden" />
+        <label for="gallery-input" class="upload-box">
+          <strong style="font-size:0.9rem;">↑ Seleccionar imagen de galería</strong>
+          <span style="font-size:0.76rem; color:#a1a1aa;">Toca para subir y activar métricas</span>
+        </label>
+
+        <img id="gallery-preview" class="upload-preview hidden" alt="Vista previa" />
+        <div id="upload-status-ok" class="status-ok hidden">✓ OK. Listo — Métricas actualizadas</div>
+      </div>
+
+      <button type="button" id="btn-test-notif" class="action btn-outline">🔔 Probar Notificación</button>
       <button type="button" id="btn-logout" class="action btn-outline">Cerrar Sesión</button>
     </section>
   </div>
 
   <script src="/js/biometria.js"></script>
   <script>
+    // 1. ANIMACIÓN DE INTRO 0% A 100%
+    (function runIntro() {
+      const loader = document.getElementById('intro-loader');
+      const pctEl = document.getElementById('intro-percent');
+      const barEl = document.getElementById('intro-bar');
+      let pct = 0;
+
+      const timer = setInterval(() => {
+        pct += Math.floor(Math.random() * 6) + 3;
+        if (pct >= 100) {
+          pct = 100;
+          clearInterval(timer);
+          setTimeout(() => loader.classList.add('fade-out'), 260);
+        }
+        pctEl.textContent = `${pct}%`;
+        barEl.style.width = `${pct}%`;
+      }, 65);
+    })();
+
     const sesion = SodieBiometria.obtenerSesion();
+    const isAdminInspect = new URLSearchParams(window.location.search).get('admin') === 'true';
     let selectedWallet = '';
     let generatedClientId = '';
+    let signedName = '';
 
     if (!sesion) {
       window.location.href = '/index.html';
     } else {
-      document.getElementById('role-badge').textContent = sesion.role || sesion.userId;
+      document.getElementById('role-badge').textContent = isAdminInspect ? 'ADMIN → VISTA SUP' : (sesion.role || sesion.userId);
       document.getElementById('c-time').textContent = new Date().toLocaleTimeString();
     }
 
-    // Obtener IP pública para el contrato
+    // Si Admin entra a inspeccionar la vista del Supervisor, salta directo al Dashboard con sus métricas
+    if (isAdminInspect && sesion && sesion.role === 'ADMIN') {
+      const btnBack = document.getElementById('btn-back-admin');
+      btnBack.classList.remove('hidden');
+      btnBack.addEventListener('click', () => { window.location.href = '/panel.html'; });
+
+      document.getElementById('step-payment').classList.add('hidden');
+      document.getElementById('step-dashboard').classList.remove('hidden');
+
+      const saved = JSON.parse(localStorage.getItem('sodie_sim_supervisor_state') || 'null');
+      if (saved) {
+        document.getElementById('dash-id-pill').textContent = saved.clientId || 'SUP-#01';
+        document.getElementById('dash-welcome').textContent = `Inspeccionando vista de ${saved.name || 'Supervisor'} (Audiencia: ${saved.audience || 'Pendiente'})`;
+        document.getElementById('m-spend').textContent = saved.metrics?.spend || '$0';
+        document.getElementById('m-reach').textContent = saved.metrics?.reach || '0';
+        document.getElementById('m-visits').textContent = saved.metrics?.visits || '0';
+        document.getElementById('m-active').textContent = saved.metrics?.active || '0';
+      } else {
+        document.getElementById('dash-id-pill').textContent = 'SUP-#01';
+        document.getElementById('dash-welcome').textContent = 'Vista previa de Supervisor (métricas iniciales).';
+      }
+    }
+
+    // IP pública para contrato
     fetch('https://api.ipify.org?format=json')
       .then(r => r.json())
       .then(d => { document.getElementById('c-ip').textContent = d.ip; })
@@ -229,13 +357,24 @@
       setTimeout(() => t.classList.add('hidden'), 3200);
     }
 
-    // PASO 1: Abrir lista de wallets
+    function guardarEstadoSupervisor(extra = {}) {
+      const current = JSON.parse(localStorage.getItem('sodie_sim_supervisor_state') || '{}');
+      const updated = {
+        ...current,
+        clientId: generatedClientId || current.clientId || 'SUP-#01',
+        name: signedName || current.name || 'Supervisor',
+        updatedAt: new Date().toLocaleTimeString(),
+        ...extra
+      };
+      localStorage.setItem('sodie_sim_supervisor_state', JSON.stringify(updated));
+    }
+
+    // PASO 1: Wallets y Pago
     document.getElementById('btn-open-wallets').addEventListener('click', () => {
       document.getElementById('btn-open-wallets').classList.add('hidden');
       document.getElementById('wallets-container').classList.remove('hidden');
     });
 
-    // Seleccionar 1 wallet
     document.querySelectorAll('.wallet-opt').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.wallet-opt').forEach(b => b.classList.remove('selected'));
@@ -244,12 +383,8 @@
       });
     });
 
-    // Validar pago y generar ID
     document.getElementById('btn-validate-payment').addEventListener('click', () => {
-      if (!selectedWallet) {
-        mostrarToast('Elige una wallet primero.');
-        return;
-      }
+      if (!selectedWallet) { mostrarToast('Elige una wallet primero.'); return; }
       const btn = document.getElementById('btn-validate-payment');
       btn.disabled = true;
       btn.textContent = 'Validando transacción en red...';
@@ -258,6 +393,17 @@
         const num = Math.floor(1000 + Math.random() * 9000);
         const prefix = (sesion && sesion.role === 'ADMIN') ? 'ADM' : 'SUP';
         generatedClientId = `${prefix}-#${num}`;
+
+        // Notifica al Panel Admin
+        const payList = JSON.parse(localStorage.getItem('sodie_sim_payments') || '[]');
+        payList.unshift({
+          clientId: generatedClientId,
+          amount: '$50,000 USDC',
+          wallet: selectedWallet,
+          time: new Date().toLocaleTimeString()
+        });
+        localStorage.setItem('sodie_sim_payments', JSON.stringify(payList.slice(0, 15)));
+        guardarEstadoSupervisor({ wallet: selectedWallet });
 
         document.getElementById('generated-id-banner').textContent = `✓ Pago Validado • ID: ${generatedClientId}`;
         document.getElementById('c-client-id').textContent = generatedClientId;
@@ -270,7 +416,7 @@
       }, 1100);
     });
 
-    // PASO 2 -> PASO 3 (Términos -> Contrato)
+    // PASO 2 -> PASO 3
     document.getElementById('btn-next-contract').addEventListener('click', () => {
       if (!document.getElementById('chk-terms').checked) {
         mostrarToast('Marca la casilla de términos para continuar.');
@@ -280,20 +426,36 @@
       document.getElementById('step-contract').classList.remove('hidden');
     });
 
-    // PASO 3 -> PASO 4 (Contrato -> Dashboard)
+    // PASO 3 -> PASO 4
     document.getElementById('btn-sign-contract').addEventListener('click', () => {
-      const nombre = document.getElementById('c-fullname').value.trim();
-      if (!nombre) {
-        mostrarToast('Escribe tu nombre para firmar.');
-        return;
-      }
-      document.getElementById('dash-welcome').textContent = `Bienvenido ${nombre} (${sesion.role}). Sube una imagen para sincronizar métricas.`;
+      signedName = document.getElementById('c-fullname').value.trim();
+      if (!signedName) { mostrarToast('Escribe tu nombre para firmar.'); return; }
+      guardarEstadoSupervisor({ name: signedName });
+      document.getElementById('dash-welcome').textContent = `Bienvenido ${signedName}. Define tu audiencia para activar el sistema.`;
       document.getElementById('step-contract').classList.add('hidden');
       document.getElementById('step-dashboard').classList.remove('hidden');
-      mostrarToast(`Contrato firmado por ${nombre} ✓`);
+      mostrarToast(`Contrato firmado por ${signedName} ✓`);
     });
 
-    // PASO 4: Subir imagen desde galería -> "OK. Listo" + Actualizar métricas
+    // PASO 4A -> 4B -> 4C: AUDIENCIA ESCRITA -> CARGANDO -> DESBLOQUEAR IMAGEN
+    document.getElementById('btn-send-audience').addEventListener('click', () => {
+      const audText = document.getElementById('audience-text').value.trim();
+      if (!audText) {
+        mostrarToast('Escribe tu audiencia antes de enviar.');
+        return;
+      }
+      document.getElementById('phase-audience').classList.add('hidden');
+      document.getElementById('phase-loading-audience').classList.remove('hidden');
+
+      setTimeout(() => {
+        guardarEstadoSupervisor({ audience: audText });
+        document.getElementById('phase-loading-audience').classList.add('hidden');
+        document.getElementById('phase-image').classList.remove('hidden');
+        mostrarToast('Audiencia cargada. Ahora sube tu imagen.');
+      }, 2200);
+    });
+
+    // PASO 4C: SUBIR IMAGEN -> "OK. Listo" + ACTUALIZAR MÉTRICAS
     document.getElementById('gallery-input').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -301,33 +463,29 @@
       const preview = document.getElementById('gallery-preview');
       preview.src = URL.createObjectURL(file);
       preview.classList.remove('hidden');
-
       document.getElementById('upload-status-ok').classList.remove('hidden');
 
-      // Actualiza las métricas del panel en tiempo real
-      document.getElementById('m-spend').textContent = '$4,850';
-      document.getElementById('m-reach').textContent = '74,200';
-      document.getElementById('m-visits').textContent = '1,640';
-      document.getElementById('m-active').textContent = '46';
+      const newMetrics = { spend: '$4,850', reach: '74,200', visits: '1,640', active: '46' };
+      document.getElementById('m-spend').textContent = newMetrics.spend;
+      document.getElementById('m-reach').textContent = newMetrics.reach;
+      document.getElementById('m-visits').textContent = newMetrics.visits;
+      document.getElementById('m-active').textContent = newMetrics.active;
 
-      mostrarToast('OK. Listo — Panel actualizado');
+      guardarEstadoSupervisor({ metrics: newMetrics });
+      mostrarToast('Listo — Métricas actualizadas');
     });
 
-    // Probar Notificación
+    // Notificación y Logout
     document.getElementById('btn-test-notif').addEventListener('click', async () => {
-      mostrarToast('🔔 Notificación S#1: Campaña y métricas sincronizadas.');
+      mostrarToast('Notificación S#1: Campaña y métricas sincronizadas.');
       if ('Notification' in window) {
         const perm = await Notification.requestPermission();
         if (perm === 'granted') {
-          new Notification('S#1 Simulación', {
-            body: 'Tu panel y métricas fueron actualizados correctamente.',
-            icon: '/icon.png'
-          });
+          new Notification('S#1 Simulación', { body: 'Tu panel y métricas fueron actualizados.' });
         }
       }
     });
 
-    // Cerrar sesión
     document.getElementById('btn-logout').addEventListener('click', () => {
       SodieBiometria.cerrarSesion();
       window.location.href = '/index.html';
