@@ -28,11 +28,12 @@
 
   <script src="/js/biometria.js"></script>
   <script>
+    
     const sesion = SodieBiometria.obtenerSesion();
-    if (!sesion) {
+    if (!sesion || sesion.role !== 'ADMIN') {
       window.location.href = '/index.html';
     } else {
-      document.getElementById('panel-user-info').textContent = `Usuario validado: ${sesion.userId}`;
+      document.getElementById('panel-user-info').textContent = `Usuario validado: ${sesion.userId} (Control Total)`;
     }
 
     document.getElementById('btn-logout').addEventListener('click', () => {
