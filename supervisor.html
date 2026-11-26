@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Supervisor | SODIE</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #0b0218; color: #fff; font-family: system-ui, sans-serif; padding: 16px;
+    }
+    .card {
+      width: 100%; max-width: 400px; padding: 24px; border-radius: 16px; text-align: center;
+      background: rgba(217, 70, 239, 0.08); border: 1px solid #d946ef;
+    }
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem;
+      background: rgba(217, 70, 239, 0.2); color: #f0abfc; margin-bottom: 10px;
+    }
+    button {
+      margin-top: 16px; padding: 10px 18px; border-radius: 10px; border: none;
+      background: #ff007a; color: #fff; font-weight: 700; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <span class="badge">NIVEL SUPERVISOR • SOLO LECTURA / OPERACIÓN</span>
+    <h2 style="color:#00ffcc; margin-top:0;">Panel de Supervisión</h2>
+    <p id="sup-user-info">Verificando sesión...</p>
+    <button type="button" id="btn-logout">Cerrar Sesión</button>
+  </main>
+
+  <script src="/js/biometria.js"></script>
+  <script>
+    const sesion = SodieBiometria.obtenerSesion();
+    if (!sesion || (sesion.role !== 'SUPERVISOR' && sesion.role !== 'ADMIN')) {
+      window.location.href = '/index.html';
+    } else {
+      document.getElementById('sup-user-info').textContent = `Validado: ${sesion.userId} (${sesion.role})`;
+    }
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      SodieBiometria.cerrarSesion();
+      window.location.href = '/index.html';
+    });
+  </script>
+</body>
+</html>
