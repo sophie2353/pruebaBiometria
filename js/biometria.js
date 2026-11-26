@@ -104,13 +104,11 @@ const SodieBiometria = (() => {
 
       if (!assertion) return { ok: false, error: 'Validación fallida.' };
 
-      const sessionData = { userId: cleanId, verifiedAt: Date.now() };
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-
-      return { ok: true, userId: cleanId };
-    } catch (err) {
-      return { ok: false, error: err.message || 'Validación cancelada.' };
-    }
+    function resolverRol(userId) {
+    const clean = (userId || '').trim().toUpperCase();
+    if (clean === 'ADMIN') return 'ADMIN';
+    if (clean.startsWith('SUPERVISOR') || clean.startsWith('SUP-')) return 'SUPERVISOR';
+    return 'CLIENT';
   }
 
   function obtenerSesion() {
