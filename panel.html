@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Validado</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #0b0218; color: #fff; font-family: system-ui, sans-serif; padding: 16px;
+    }
+    .card {
+      width: 100%; max-width: 380px; padding: 24px; border-radius: 16px; text-align: center;
+      background: rgba(0,255,204,0.06); border: 1px solid #00ffcc;
+    }
+    button {
+      margin-top: 16px; padding: 10px 18px; border-radius: 10px; border: none;
+      background: #ff007a; color: #fff; font-weight: 700; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h2 style="color:#00ffcc; margin-top:0;">Acceso Concedido</h2>
+    <p id="panel-user-info">Verificando sesión...</p>
+    <button type="button" id="btn-logout">Cerrar Sesión</button>
+  </main>
+
+  <script src="/js/biometria.js"></script>
+  <script>
+    const sesion = SodieBiometria.obtenerSesion();
+    if (!sesion) {
+      window.location.href = '/index.html';
+    } else {
+      document.getElementById('panel-user-info').textContent = `Usuario validado: ${sesion.userId}`;
+    }
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      SodieBiometria.cerrarSesion();
+      window.location.href = '/index.html';
+    });
+  </script>
+</body>
+</html>
