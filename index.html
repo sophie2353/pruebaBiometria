@@ -4,56 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>S#1 • Acceso</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/jpeg" href="/icon.jpg">
-  <link rel="apple-touch-icon" href="/icon.jpg">
   <meta name="theme-color" content="#000000">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #141414 0%, #000000 65%);
+      color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       padding: 20px;
     }
     .card {
-      width: 100%; max-width: 380px; padding: 28px 24px; border-radius: 20px;
-      background: #0a0a0a; border: 1px solid #262626;
-      display: flex; flex-direction: column; gap: 14px;
+      width: 100%; max-width: 390px; padding: 32px 24px; border-radius: 24px;
+      background: rgba(12, 12, 12, 0.92); border: 1px solid #262626;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+      display: flex; flex-direction: column; gap: 16px;
     }
-    .logo-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 6px; }
-    .logo-box img { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #333; }
-    h1 { margin: 0; font-size: 1.25rem; letter-spacing: 2px; font-weight: 700; }
-    .sub { margin: 0; font-size: 0.8rem; color: #a1a1aa; text-align: center; }
-    .role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .header-brand {
+      display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 4px;
+    }
+    /* Emblema en CSS puro (imposible que se rompa) */
+    .emblem {
+      width: 58px; height: 58px; border-radius: 50%;
+      border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 1.45rem; font-weight: 800; letter-spacing: -1px;
+      box-shadow: 0 0 0 5px #000, 0 0 0 6px #2e2e2e;
+    }
+    h1 { margin: 0; font-size: 1.2rem; letter-spacing: 3px; font-weight: 700; }
+    .sub { margin: 0; font-size: 0.78rem; color: #8e8e93; text-align: center; }
+
+    .role-tabs {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      padding: 4px; border-radius: 12px; background: #000; border: 1px solid #262626;
+    }
     .role-btn {
-      padding: 10px; border-radius: 10px; border: 1px solid #333; background: #000;
-      color: #a1a1aa; font-weight: 600; font-size: 0.82rem; cursor: pointer;
+      padding: 10px; border-radius: 9px; border: none; background: transparent;
+      color: #8e8e93; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.5px;
+      cursor: pointer; transition: all 0.2s ease;
     }
-    .role-btn.active { background: #fff; color: #000; border-color: #fff; }
+    .role-btn.active { background: #fff; color: #000; }
+
+    .field-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 0.72rem; color: #71717a; letter-spacing: 0.8px; text-transform: uppercase; }
     input {
-      width: 100%; padding: 12px 14px; border-radius: 10px; font-size: 0.92rem;
-      background: #000; border: 1px solid #333; color: #fff;
+      width: 100%; padding: 12px 14px; border-radius: 12px; font-size: 0.92rem;
+      background: #000; border: 1px solid #2e2e2e; color: #fff; font-weight: 600;
+      letter-spacing: 0.5px;
     }
+
+    .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
     button.action {
-      width: 100%; padding: 13px; border-radius: 12px; font-size: 0.92rem; font-weight: 700; cursor: pointer;
+      width: 100%; padding: 14px; border-radius: 12px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; transition: opacity 0.2s ease;
     }
+    button.action:active { opacity: 0.8; }
     .btn-white { background: #fff; color: #000; border: none; }
-    .btn-outline { background: transparent; color: #fff; border: 1px solid #404040; }
-    .btn-install {
-      background: #141414; color: #e4e4e7; border: 1px dashed #52525b;
-      padding: 10px; font-size: 0.8rem; border-radius: 10px; cursor: pointer;
+    .btn-outline { background: transparent; color: #fff; border: 1px solid #3f3f46; }
+
+    #bio-status {
+      font-size: 0.8rem; text-align: center; color: #d4d4d8; min-height: 18px;
+      line-height: 1.4;
     }
-    #bio-status { font-size: 0.82rem; text-align: center; color: #d4d4d8; min-height: 20px; }
   </style>
 </head>
 <body>
   <main class="card">
-    <div class="logo-box">
-      <img src="/icon.svg" alt="Logo">
+    <div class="header-brand">
+      <div class="emblem">S</div>
       <h1>S#1</h1>
-      <p class="sub">Entorno de Simulación Biométrica</p>
+      <p class="sub">Verificación Biométrica • Entorno Simulado</p>
     </div>
 
     <div class="role-tabs">
@@ -61,33 +79,28 @@
       <button type="button" class="role-btn" data-role="SUPERVISOR">SUPERVISOR</button>
     </div>
 
-    <input type="text" id="bio-user-id" value="ADMIN" readonly />
+    <div class="field-wrap">
+      <span class="field-label">Credencial Activa</span>
+      <input type="text" id="bio-user-id" value="ADMIN" readonly />
+    </div>
 
-    <button type="button" id="btn-bio-register" class="action btn-outline">
-      1. Registrar Biometría (Huella / Face ID)
-    </button>
-
-    <button type="button" id="btn-bio-login" class="action btn-white">
-      2. Entrar al Flujo
-    </button>
-
-    <button type="button" id="btn-install-pwa" class="btn-install">
-      ⬇ Instalar Web App en este dispositivo
-    </button>
+    <div class="actions">
+      <button type="button" id="btn-bio-register" class="action btn-outline">
+        1. Registrar Huella / Face ID
+      </button>
+      <button type="button" id="btn-bio-login" class="action btn-white">
+        2. Entrar al Flujo ➔
+      </button>
+    </div>
 
     <div id="bio-status"></div>
   </main>
 
   <script src="/js/biometria.js"></script>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
-
     const statusEl = document.getElementById('bio-status');
     const userInput = document.getElementById('bio-user-id');
 
-    // Selector rápido ADMIN / SUPERVISOR
     document.querySelectorAll('.role-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -97,14 +110,12 @@
       });
     });
 
-    // 1. Registrar
     document.getElementById('btn-bio-register').addEventListener('click', async () => {
       statusEl.textContent = 'Esperando sensor biométrico...';
       const res = await SodieBiometria.registrar(userInput.value);
       statusEl.textContent = res.ok ? `✅ Biometría registrada para ${res.userId}.` : `❌ ${res.error}`;
     });
 
-    // 2. Validar y entrar al flujo simulado
     document.getElementById('btn-bio-login').addEventListener('click', async () => {
       statusEl.textContent = 'Validando biometría...';
       const res = await SodieBiometria.validar(userInput.value);
@@ -112,26 +123,6 @@
         window.location.href = '/flujo.html';
       } else {
         statusEl.textContent = `❌ ${res.error}`;
-      }
-    });
-
-    // 3. Instalación PWA (Android automático / iOS guía directa)
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-    });
-
-    document.getElementById('btn-install-pwa').addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-      } else {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        statusEl.textContent = isIOS
-          ? 'En Safari (iOS): toca Compartir (↑) y luego "Agregar a inicio".'
-          : 'En Chrome: abre el menú (⋮) y toca "Instalar aplicación".';
       }
     });
   </script>
