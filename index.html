@@ -3,41 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prueba Biometría</title>
+  <title>S#1 • Acceso</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: #0b0218; color: #fff; font-family: system-ui, sans-serif; padding: 16px;
+      background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 20px;
     }
     .card {
-      width: 100%; max-width: 380px; padding: 24px; border-radius: 16px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(0,255,204,0.35);
+      width: 100%; max-width: 380px; padding: 28px 24px; border-radius: 20px;
+      background: #0a0a0a; border: 1px solid #262626;
       display: flex; flex-direction: column; gap: 14px;
     }
-    h2 { margin: 0; color: #00ffcc; text-align: center; }
-    input, button {
-      width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; font-size: 0.95rem;
+    .logo-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .logo-box img { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #333; }
+    h1 { margin: 0; font-size: 1.25rem; letter-spacing: 2px; font-weight: 700; }
+    .sub { margin: 0; font-size: 0.8rem; color: #a1a1aa; text-align: center; }
+    .role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .role-btn {
+      padding: 10px; border-radius: 10px; border: 1px solid #333; background: #000;
+      color: #a1a1aa; font-weight: 600; font-size: 0.82rem; cursor: pointer;
     }
+    .role-btn.active { background: #fff; color: #000; border-color: #fff; }
     input {
-      background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+      width: 100%; padding: 12px 14px; border-radius: 10px; font-size: 0.92rem;
+      background: #000; border: 1px solid #333; color: #fff;
     }
-    button { border: none; font-weight: 700; cursor: pointer; }
-    .btn-mint { background: #00ffcc; color: #0b0218; }
-    .btn-fuchsia { background: #d946ef; color: #fff; }
-    #bio-status { font-size: 0.85rem; text-align: center; color: #cbd5e1; min-height: 20px; }
+    button.action {
+      width: 100%; padding: 13px; border-radius: 12px; font-size: 0.92rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-white { background: #fff; color: #000; border: none; }
+    .btn-outline { background: transparent; color: #fff; border: 1px solid #404040; }
+    .btn-install {
+      background: #141414; color: #e4e4e7; border: 1px dashed #52525b;
+      padding: 10px; font-size: 0.8rem; border-radius: 10px; cursor: pointer;
+    }
+    #bio-status { font-size: 0.82rem; text-align: center; color: #d4d4d8; min-height: 20px; }
   </style>
 </head>
 <body>
   <main class="card">
-    <h2>Acceso Biométrico</h2>
-    <input type="text" id="bio-user-id" placeholder="ID de usuario (ej. ADMIN o CLIENT-#01)" value="ADMIN" />
+    <div class="logo-box">
+      <img src="/icon.svg" alt="Logo">
+      <h1>S#1</h1>
+      <p class="sub">Entorno de Simulación Biométrica</p>
+    </div>
 
-    <button type="button" id="btn-bio-register" class="btn-fuchsia">
-      1. Registrar Huella / Face ID
+    <div class="role-tabs">
+      <button type="button" class="role-btn active" data-role="ADMIN">ADMIN</button>
+      <button type="button" class="role-btn" data-role="SUPERVISOR">SUPERVISOR</button>
+    </div>
+
+    <input type="text" id="bio-user-id" value="ADMIN" readonly />
+
+    <button type="button" id="btn-bio-register" class="action btn-outline">
+      1. Registrar Biometría (Huella / Face ID)
     </button>
 
-    <button type="button" id="btn-bio-login" class="btn-mint">
-      2. Entrar con Biometría
+    <button type="button" id="btn-bio-login" class="action btn-white">
+      2. Entrar al Flujo
+    </button>
+
+    <button type="button" id="btn-install-pwa" class="btn-install">
+      ⬇ Instalar Web App en este dispositivo
     </button>
 
     <div id="bio-status"></div>
@@ -45,33 +80,58 @@
 
   <script src="/js/biometria.js"></script>
   <script>
-    const statusEl = document.getElementById('bio-status');
-    const getUserId = () => document.getElementById('bio-user-id').value.trim() || 'ADMIN';
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
 
-      <script src="/js/biometria.js"></script>
-  <script>
     const statusEl = document.getElementById('bio-status');
-    const getUserId = () => document.getElementById('bio-user-id').value.trim() || 'ADMIN';
+    const userInput = document.getElementById('bio-user-id');
 
-    // Botón 1: Registrar (este era el que faltaba)
-    document.getElementById('btn-bio-register').addEventListener('click', async () => {
-      statusEl.textContent = 'Esperando sensor biométrico...';
-      const res = await SodieBiometria.registrar(getUserId());
-      statusEl.textContent = res.ok ? '✅ Huella registrada. Ya puedes entrar.' : `❌ ${res.error}`;
+    // Selector rápido ADMIN / SUPERVISOR
+    document.querySelectorAll('.role-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        userInput.value = btn.dataset.role;
+        statusEl.textContent = '';
+      });
     });
 
-    // Botón 2: Entrar y redirigir según el rol
+    // 1. Registrar
+    document.getElementById('btn-bio-register').addEventListener('click', async () => {
+      statusEl.textContent = 'Esperando sensor biométrico...';
+      const res = await SodieBiometria.registrar(userInput.value);
+      statusEl.textContent = res.ok ? `✅ Biometría registrada para ${res.userId}.` : `❌ ${res.error}`;
+    });
+
+    // 2. Validar y entrar al flujo simulado
     document.getElementById('btn-bio-login').addEventListener('click', async () => {
       statusEl.textContent = 'Validando biometría...';
-      const res = await SodieBiometria.validar(getUserId());
+      const res = await SodieBiometria.validar(userInput.value);
       if (res.ok) {
-        if (res.role === 'ADMIN') {
-          window.location.href = '/panel.html';
-        } else {
-          window.location.href = '/supervisor.html';
-        }
+        window.location.href = '/flujo.html';
       } else {
         statusEl.textContent = `❌ ${res.error}`;
+      }
+    });
+
+    // 3. Instalación PWA (Android automático / iOS guía directa)
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    document.getElementById('btn-install-pwa').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      } else {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        statusEl.textContent = isIOS
+          ? 'En Safari (iOS): toca Compartir (↑) y luego "Agregar a inicio".'
+          : 'En Chrome: abre el menú (⋮) y toca "Instalar aplicación".';
       }
     });
   </script>
