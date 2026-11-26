@@ -48,17 +48,28 @@
     const statusEl = document.getElementById('bio-status');
     const getUserId = () => document.getElementById('bio-user-id').value.trim() || 'ADMIN';
 
+      <script src="/js/biometria.js"></script>
+  <script>
+    const statusEl = document.getElementById('bio-status');
+    const getUserId = () => document.getElementById('bio-user-id').value.trim() || 'ADMIN';
+
+    // Botón 1: Registrar (este era el que faltaba)
     document.getElementById('btn-bio-register').addEventListener('click', async () => {
       statusEl.textContent = 'Esperando sensor biométrico...';
       const res = await SodieBiometria.registrar(getUserId());
       statusEl.textContent = res.ok ? '✅ Huella registrada. Ya puedes entrar.' : `❌ ${res.error}`;
     });
 
+    // Botón 2: Entrar y redirigir según el rol
     document.getElementById('btn-bio-login').addEventListener('click', async () => {
       statusEl.textContent = 'Validando biometría...';
       const res = await SodieBiometria.validar(getUserId());
       if (res.ok) {
-        window.location.href = '/panel.html';
+        if (res.role === 'ADMIN') {
+          window.location.href = '/panel.html';
+        } else {
+          window.location.href = '/supervisor.html';
+        }
       } else {
         statusEl.textContent = `❌ ${res.error}`;
       }
