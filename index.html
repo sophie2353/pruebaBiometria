@@ -119,8 +119,8 @@
     document.getElementById('btn-bio-login').addEventListener('click', async () => {
       statusEl.textContent = 'Validando biometría...';
       const res = await SodieBiometria.validar(userInput.value);
-      if (res.ok) {
-        window.location.href = '/flujo.html';
+            if (res.ok) {
+        window.location.href = res.role === 'ADMIN' ? '/panel.html' : '/flujo.html';
       } else {
         statusEl.textContent = `❌ ${res.error}`;
       }
