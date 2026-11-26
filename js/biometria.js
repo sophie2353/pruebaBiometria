@@ -81,12 +81,11 @@ const SodieBiometria = (() => {
   // 2. VALIDACIÓN DIRECTA (BANNER BIOMÉTRICO)
   async function validar(userId = 'ADMIN') {
     try {
-      const cleanId = userId.trim().toUpperCase();
-      const savedCredId = localStorage.getItem(`${STORAGE_KEY_PREFIX}${cleanId}`);
+     const role = resolverRol(cleanId);
+      const sessionData = { userId: cleanId, role, verifiedAt: Date.now() };
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
 
-      if (!savedCredId) {
-        return { ok: false, error: `No hay huella registrada para ${cleanId}. Regístrala primero.` };
-      }
+      return { ok: true, userId: cleanId, role };
 
       const assertion = await navigator.credentials.get({
         publicKey: {
