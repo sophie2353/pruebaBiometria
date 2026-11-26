@@ -23,6 +23,13 @@ const SodieBiometria = (() => {
     return arr;
   }
 
+  function resolverRol(userId) {
+    const clean = (userId || '').trim().toUpperCase();
+    if (clean === 'ADMIN') return 'ADMIN';
+    if (clean.startsWith('SUPERVISOR') || clean.startsWith('SUP-')) return 'SUPERVISOR';
+    return 'CLIENT';
+  }
+
   async function soportarBiometriaLocal() {
     if (!window.PublicKeyCredential) return false;
     try {
@@ -45,7 +52,7 @@ const SodieBiometria = (() => {
 
       const credential = await navigator.credentials.create({
         publicKey: {
-          challenge: generarChallenge(), // En V4 producción: pedir este challenge al backend
+          challenge: generarChallenge(),
           rp: {
             name: 'SODIE V4',
             id: window.location.hostname
@@ -56,12 +63,12 @@ const SodieBiometria = (() => {
             displayName: cleanId
           },
           pubKeyCredParams: [
-            { type: 'public-key', alg: -7 },   // ES256
-            { type: 'public-key', alg: -257 }  // RS256
+            { type: 'public-key', alg: -7 },
+            { type: 'public-key', alg: -257 }
           ],
           authenticatorSelection: {
-            authenticatorAttachment: 'platform', // Fuerza sensor local (huella/Face ID)
-            userVerification: 'required',        // Exige biometría obligatoria
+            authenticatorAttachment: 'platform',
+            userVerification: 'required',
             residentKey: 'preferred'
           },
           timeout: 60000,
@@ -81,20 +88,21 @@ const SodieBiometria = (() => {
   // 2. VALIDACIÓN DIRECTA (BANNER BIOMÉTRICO)
   async function validar(userId = 'ADMIN') {
     try {
-     const role = resolverRol(cleanId);
-      const sessionData = { userId: cleanId, role, verifiedAt: Date.now() };
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+      const cleanId = userId.trim().toUpperCase();
+      const savedCredId = localStorage.getItem(`${STORAGE_KEY_PREFIX}${cleanId}`);
 
-      return { ok: true, userId: cleanId, role };
+      if (!savedCredId) {
+        return { ok: false, error: `No hay huella registrada para ${cleanId}. Regístrala primero.` };
+      }
 
       const assertion = await navigator.credentials.get({
         publicKey: {
-          challenge: generarChallenge(), // En V4 producción: validar firma en backend
+          challenge: generarChallenge(),
           rpId: window.location.hostname,
           allowCredentials: [{
             id: base64ToBuffer(savedCredId),
             type: 'public-key',
-            transports: ['internal'] // Evita QR / llaves externas y abre el banner local
+            transports: ['internal']
           }],
           userVerification: 'required',
           timeout: 60000
@@ -103,11 +111,14 @@ const SodieBiometria = (() => {
 
       if (!assertion) return { ok: false, error: 'Validación fallida.' };
 
-    function resolverRol(userId) {
-    const clean = (userId || '').trim().toUpperCase();
-    if (clean === 'ADMIN') return 'ADMIN';
-    if (clean.startsWith('SUPERVISOR') || clean.startsWith('SUP-')) return 'SUPERVISOR';
-    return 'CLIENT';
+      const role = resolverRol(cleanId);
+      const sessionData = { userId: cleanId, role, verifiedAt: Date.now() };
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+
+      return { ok: true, userId: cleanId, role };
+    } catch (err) {
+      return { ok: false, error: err.message || 'Validación cancelada.' };
+    }
   }
 
   function obtenerSesion() {
