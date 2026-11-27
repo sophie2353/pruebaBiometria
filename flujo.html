@@ -235,7 +235,7 @@
         <div><span>Fecha/Hora</span><strong id="c-time">-</strong></div>
       </div>
 
-        <div class="field-wrap">
+      <div class="field-wrap">
         <label for="c-fullname" class="field-label">Nombre Completo (Firma Digital)</label>
         <input type="text" id="c-fullname" placeholder="Ej. Sofía Martínez" />
       </div>
@@ -291,7 +291,8 @@
       </div>
 
       <button type="button" id="btn-test-notif" class="action btn-outline">Probar Notificación</button>
-            <!-- AGENTE DE SOPORTE TÉCNICO (PUSH) -->
+
+      <!-- AGENTE DE SOPORTE TÉCNICO (PUSH) -->
       <div style="display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid #262626;">
         <p style="color:#fff; font-weight:600;">Agente de Soporte Técnico</p>
         <button type="button" id="btn-sup-enable-push" class="action btn-outline">
@@ -302,8 +303,9 @@
         </button>
         <p id="sup-support-status" style="font-size:0.78rem; color:#d4d4d8; min-height:18px;"></p>
       </div>
+
       <button type="button" onclick="window.location.href='/agente.html'" class="action btn-white">
-      Probar Agente en Vivo
+        Probar Agente en Vivo
       </button>
       <button type="button" id="btn-logout" class="action btn-outline">Cerrar Sesión</button>
     </section>
@@ -312,6 +314,9 @@
   <script src="/js/biometria.js"></script>
   <script src="/js/soporte-push.js"></script>
   <script>
+    // 👇 PEGA AQUÍ LA URL DE TU BACKEND DE PRUEBA EN RENDER (sin barra al final)
+    const PAY_API_URL = 'https://TU-BACKEND-DE-PRUEBA.onrender.com';
+
     // 1. ANIMACIÓN DE INTRO 0% A 100%
     (function runIntro() {
       const loader = document.getElementById('intro-loader');
@@ -344,7 +349,7 @@
       document.getElementById('c-time').textContent = new Date().toLocaleTimeString();
     }
 
-    // Si Admin entra a inspeccionar la vista del Supervisor, salta directo al Dashboard con sus métricas
+    // Si Admin entra a inspeccionar la vista del Supervisor, carga los datos en vivo del backend
     if (isAdminInspect && sesion && sesion.role === 'ADMIN') {
       const btnBack = document.getElementById('btn-back-admin');
       btnBack.classList.remove('hidden');
@@ -353,18 +358,26 @@
       document.getElementById('step-payment').classList.add('hidden');
       document.getElementById('step-dashboard').classList.remove('hidden');
 
-      const saved = JSON.parse(localStorage.getItem('sodie_sim_supervisor_state') || 'null');
-      if (saved) {
-        document.getElementById('dash-id-pill').textContent = saved.clientId || 'SUP-#01';
-        document.getElementById('dash-welcome').textContent = `Inspeccionando vista de ${saved.name || 'Supervisor'} (Audiencia: ${saved.audience || 'Pendiente'})`;
-        document.getElementById('m-spend').textContent = saved.metrics?.spend || '$0';
-        document.getElementById('m-reach').textContent = saved.metrics?.reach || '0';
-        document.getElementById('m-visits').textContent = saved.metrics?.visits || '0';
-        document.getElementById('m-active').textContent = saved.metrics?.active || '0';
-      } else {
-        document.getElementById('dash-id-pill').textContent = 'SUP-#01';
-        document.getElementById('dash-welcome').textContent = 'Vista previa de Supervisor (métricas iniciales).';
-      }
+      const pintarVistaInspeccion = (saved) => {
+        if (saved) {
+          document.getElementById('dash-id-pill').textContent = saved.clientId || 'SUP-#01';
+          document.getElementById('dash-welcome').textContent = `Inspeccionando vista de ${saved.name || 'Supervisor'} (Audiencia: ${saved.audience || 'Pendiente'})`;
+          document.getElementById('m-spend').textContent = saved.metrics?.spend || '$0';
+          document.getElementById('m-reach').textContent = saved.metrics?.reach || '0';
+          document.getElementById('m-visits').textContent = saved.metrics?.visits || '0';
+          document.getElementById('m-active').textContent = saved.metrics?.active || '0';
+        } else {
+          document.getElementById('dash-id-pill').textContent = 'SUP-#01';
+          document.getElementById('dash-welcome').textContent = 'Vista previa de Supervisor (métricas iniciales).';
+        }
+      };
+
+      pintarVistaInspeccion(JSON.parse(localStorage.getItem('sodie_sim_supervisor_state') || 'null'));
+
+      fetch(`${PAY_API_URL}/api/pay/admin-data`)
+        .then(r => r.json())
+        .then(d => { if (d.ok && d.supervisorState) pintarVistaInspeccion(d.supervisorState); })
+        .catch(() => {});
     }
 
     // IP pública para contrato
@@ -390,6 +403,13 @@
         ...extra
       };
       localStorage.setItem('sodie_sim_supervisor_state', JSON.stringify(updated));
+
+      // Sincroniza audiencia y métricas con el backend para Admin en vivo
+      fetch(`${PAY_API_URL}/api/pay/metrics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      }).catch(() => {});
     }
 
     // PASO 1: Wallets y Pago
@@ -417,7 +437,7 @@
         const prefix = (sesion && sesion.role === 'ADMIN') ? 'ADM' : 'SUP';
         generatedClientId = `${prefix}-#${num}`;
 
-        // Notifica al Panel Admin
+        // Guarda en local y dispara POST /api/pay/superviser para Push a ADMIN
         const payList = JSON.parse(localStorage.getItem('sodie_sim_payments') || '[]');
         payList.unshift({
           clientId: generatedClientId,
@@ -426,6 +446,18 @@
           time: new Date().toLocaleTimeString()
         });
         localStorage.setItem('sodie_sim_payments', JSON.stringify(payList.slice(0, 15)));
+
+        fetch(`${PAY_API_URL}/api/pay/superviser`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientId: generatedClientId,
+            amount: '$50,000 USDC',
+            wallet: selectedWallet,
+            name: signedName || 'Supervisor'
+          })
+        }).catch(() => {});
+
         guardarEstadoSupervisor({ wallet: selectedWallet });
 
         document.getElementById('generated-id-banner').textContent = `✓ Pago Validado • ID: ${generatedClientId}`;
