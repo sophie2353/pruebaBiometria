@@ -194,6 +194,10 @@
       cargarDatosAdmin();
     });
 
+    <button type="button" onclick="window.location.href='/agente.html'" class="action btn-white">
+  Probar Agente en Vivo
+      </button>
+
     document.getElementById('btn-logout').addEventListener('click', () => {
       SodieBiometria.cerrarSesion();
       window.location.href = '/index.html';
