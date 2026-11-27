@@ -1,86 +1,19 @@
 /**
  * S#1 - Agente Interactivo tipo Videollamada (100% Frontend, sin APIs externas)
+ * Conectado a js/guion-agente.js
  */
 (() => {
+  const GUION = window.GUION_AGENTE;
+  if (!GUION) {
+    console.error('Falta cargar /js/guion-agente.js antes de /js/agente.js');
+    return;
+  }
+
+  const KNOWLEDGE = GUION.BLOQUES;
+  const INITIAL_OPTIONS = GUION.OPCIONES_INICIALES;
+
   let voiceEnabled = true;
-
-  // Base de conocimiento determinista: cada respuesta incluye pregunta de cierre y siguientes botones
-  const KNOWLEDGE = {
-    precio: {
-      keywords: ['precio', 'cuesta', 'costo', 'valor', 'pagar', 'pago', '50', '50000', 'usdc', 'inversion', 'inversión'],
-      answer: 'La licencia anual corporativa es de $50,000 USDC en un solo pago, sin mensualidades ocultas ni comisiones sobre tu facturación. Solo operamos con 4 cupos activos a la vez.',
-      closing: '¿Tu operación actual ya invierte en adquisición o estás por escalar una nueva oferta?',
-      options: [
-        { label: 'Ya invertimos en pauta', intent: 'escalar' },
-        { label: '¿Cómo es el contrato?', intent: 'contrato' },
-        { label: 'Reservar cupo ahora ➔', intent: 'cerrar', cta: true }
-      ]
-    },
-    seguridad: {
-      keywords: ['meta', 'cuenta', 'seguridad', 'acceso', 'ban', 'bloqueo', 'control', 'datos', 'contraseña'],
-      answer: 'Tú mantienes el 100% del control de tu cuenta publicitaria y tus activos. El sistema inyecta borradores estructurados cada 72 horas sin retener tus fondos ni exigir accesos riesgosos.',
-      closing: '¿Quieres revisar cómo protegemos el acuerdo legalmente o pasar directo a la activación?',
-      options: [
-        { label: 'Ver respaldo y contrato', intent: 'contrato' },
-        { label: '¿Cuánto tarda en activar?', intent: 'tiempo' },
-        { label: 'Ir a activación ➔', intent: 'cerrar', cta: true }
-      ]
-    },
-    tiempo: {
-      keywords: ['tiempo', 'tarda', 'rapido', 'rápido', 'dias', 'días', 'horas', 'implementacion', 'implementación', 'cuando'],
-      answer: 'El alta biométrica, firma digital e inyección inicial toman menos de 10 minutos. Las campañas entran en protocolo de maduración con radar cada 4 horas y ciclos de actualización cada 72 horas.',
-      closing: '¿Te gustaría activar tu licencia hoy mismo o prefieres validar el precio primero?',
-      options: [
-        { label: 'Validar precio y cupos', intent: 'precio' },
-        { label: 'Seguridad de cuenta', intent: 'seguridad' },
-        { label: 'Activar ahora ➔', intent: 'cerrar', cta: true }
-      ]
-    },
-    contrato: {
-      keywords: ['contrato', 'legal', 'garantia', 'garantía', 'terminos', 'términos', 'factura', 'respaldo'],
-      answer: 'Todo queda respaldado con contrato digital firmado al instante, registrando ID único de cliente, IP, marca de tiempo y términos de uso corporativo antes de abrir tu panel.',
-      closing: '¿Tienes alguna otra duda técnica o avanzamos al flujo de activación?',
-      options: [
-        { label: '¿Cuánto tarda todo?', intent: 'tiempo' },
-        { label: '¿Cómo funciona la pauta?', intent: 'seguridad' },
-        { label: 'Iniciar activación ➔', intent: 'cerrar', cta: true }
-      ]
-    },
-    escalar: {
-      keywords: ['escalar', 'roas', 'resultados', 'ventas', 'clientes', 'agencia', 'funciona'],
-      answer: 'Perfecto. Al ya tener pauta activa, eliminas el tráfico vacío desde el primer ciclo de 72 horas y ahorras miles de dólares en pruebas manuales o igualas de agencias tradicionales.',
-      closing: 'Con tu volumen actual, un solo ajuste paga la licencia. ¿Bloqueamos uno de los cupos disponibles?',
-      options: [
-        { label: 'Ver seguridad de cuenta', intent: 'seguridad' },
-        { label: 'Ver contrato digital', intent: 'contrato' },
-        { label: 'Bloquear mi cupo ➔', intent: 'cerrar', cta: true }
-      ]
-    },
-    cerrar: {
-      keywords: ['comprar', 'reservar', 'activar', 'listo', 'empezar', 'quiero', 'cupo'],
-      answer: 'Excelente decisión. Te llevo directo a la pasarela de activación para seleccionar tu wallet, generar tu ID y firmar tu contrato.',
-      closing: 'Redirigiendo al flujo de activación...',
-      redirect: '/flujo.html',
-      options: []
-    },
-    fallback: {
-      answer: 'Buena pregunta. Para darte una respuesta exacta, nuestro sistema se enfoca en 3 pilares: licencia anual cerrada, control total de tu cuenta y despliegue en minutos.',
-      closing: '¿Cuál de estos puntos te gustaría profundizar ahora?',
-      options: [
-        { label: 'Precio y cupos', intent: 'precio' },
-        { label: 'Seguridad y Meta', intent: 'seguridad' },
-        { label: 'Tiempos y contrato', intent: 'tiempo' },
-        { label: 'Activar cupo ➔', intent: 'cerrar', cta: true }
-      ]
-    }
-  };
-
-  const INITIAL_OPTIONS = [
-    { label: '¿Cuál es el precio?', intent: 'precio' },
-    { label: 'Seguridad de mi cuenta', intent: 'seguridad' },
-    { label: '¿Cuánto tarda activar?', intent: 'tiempo' },
-    { label: 'Respaldo y contrato', intent: 'contrato' }
-  ];
+  let interacciones = 0;
 
   const orb = document.getElementById('agent-orb');
   const stateEl = document.getElementById('agent-state');
@@ -127,10 +60,17 @@
 
   function responderPorIntent(intentKey) {
     const item = KNOWLEDGE[intentKey] || KNOWLEDGE.fallback;
+    interacciones++;
+
+    // Tras 2+ preguntas técnicas, sube el tono a cierre agresivo automáticamente
+    const closingText = (interacciones >= 3 && item.fase !== 'cierre' && !item.redirect)
+      ? GUION.CIERRE_AGRESIVO_AUTO
+      : item.closing;
+
     speechEl.textContent = item.answer;
-    closingEl.textContent = item.closing;
+    closingEl.textContent = closingText;
     renderOptions(item.options || []);
-    hablar(`${item.answer} ${item.closing}`);
+    hablar(`${item.answer} ${closingText}`);
 
     if (item.redirect) {
       setTimeout(() => { window.location.href = item.redirect; }, 2200);
@@ -139,13 +79,33 @@
 
   function detectarIntencion(texto) {
     const clean = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const palabras = clean.split(/\s+/).filter(Boolean);
+
+    // Ignora palabras de relleno ("hola", "quisiera", "saber"...) para detectar la intención real
+    const palabrasUtiles = palabras.filter((p) => !GUION.RELLENO.includes(p));
+    const textoFiltrado = palabrasUtiles.length > 0 ? palabrasUtiles.join(' ') : clean;
+
+    let mejorIntent = 'fallback';
+    let maxPuntos = 0;
+
     for (const [key, data] of Object.entries(KNOWLEDGE)) {
-      if (!data.keywords) continue;
-      if (data.keywords.some((kw) => clean.includes(kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '')))) {
-        return key;
+      if (!data.keywords || data.keywords.length === 0) continue;
+      let puntos = 0;
+
+      for (const kw of data.keywords) {
+        const kwClean = kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (textoFiltrado.includes(kwClean)) {
+          puntos += (key === 'saludo_puro') ? 1 : 3;
+        }
+      }
+
+      if (puntos > maxPuntos) {
+        maxPuntos = puntos;
+        mejorIntent = key;
       }
     }
-    return 'fallback';
+
+    return mejorIntent;
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -162,7 +122,7 @@
       responderPorIntent(intent);
     });
 
-        // RECONOCIMIENTO DE VOZ NATIVO (100% FRONTEND - ANDROID & IOS)
+    // RECONOCIMIENTO DE VOZ NATIVO (100% FRONTEND - ANDROID & IOS)
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const btnMic = document.getElementById('btn-mic');
 
@@ -179,7 +139,6 @@
           recognition.stop();
           return;
         }
-        // Calla al agente si estaba hablando antes de escucharte
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         orb.classList.remove('speaking');
 
@@ -201,7 +160,7 @@
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         const input = document.getElementById('agent-input');
-        if (input) input.value = transcript; // Muestra brevemente lo que entendió
+        if (input) input.value = transcript;
 
         const intent = detectarIntencion(transcript);
         setTimeout(() => {
@@ -223,7 +182,7 @@
         btnMic.style.color = '#fff';
       };
     } else if (btnMic) {
-      btnMic.style.display = 'none'; // Oculta el botón si el navegador no soporta voz
+      btnMic.style.display = 'none';
     }
 
     // Silenciar / Activar voz
