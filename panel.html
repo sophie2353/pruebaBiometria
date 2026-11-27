@@ -97,7 +97,7 @@
       </div>
     </section>
 
-        <!-- 2. AGENTE DE SOPORTE PUSH (ADMIN) -->
+    <!-- 2. AGENTE DE SOPORTE PUSH (ADMIN) -->
     <section class="card">
       <h2>Agente de Soporte (Push)</h2>
       <p>Activa tus notificaciones para recibir alertas de fallo y liberar botones del Supervisor en vivo.</p>
@@ -126,8 +126,8 @@
       <button type="button" id="btn-enter-supervisor" class="btn-white">
         Entrar a Vista Supervisor ➔
       </button>
-      <button type="button" onclick="window.location.href='/agente.html'" class="action btn-white">
-       Probar Agente en Vivo
+      <button type="button" onclick="window.location.href='/agente.html'" class="btn-white">
+        Probar Agente en Vivo
       </button>
       <button type="button" id="btn-logout" class="btn-outline">Cerrar Sesión</button>
     </section>
@@ -136,6 +136,9 @@
   <script src="/js/biometria.js"></script>
   <script src="/js/soporte-push.js"></script>
   <script>
+    // 👇 PEGA AQUÍ LA URL DE TU BACKEND DE PRUEBA EN RENDER (sin barra al final)
+    const PAY_API_URL = 'https://TU-BACKEND-DE-PRUEBA.onrender.com';
+
     const sesion = SodieBiometria.obtenerSesion();
     if (!sesion || sesion.role !== 'ADMIN') {
       window.location.href = '/index.html';
@@ -148,8 +151,26 @@
       setTimeout(() => t.classList.add('hidden'), 3500);
     }
 
-    function cargarDatosAdmin() {
-      const payments = JSON.parse(localStorage.getItem('sodie_sim_payments') || '[]');
+    async function cargarDatosAdmin() {
+      let payments = JSON.parse(localStorage.getItem('sodie_sim_payments') || '[]');
+      let supState = JSON.parse(localStorage.getItem('sodie_sim_supervisor_state') || 'null');
+
+      try {
+        const res = await fetch(`${PAY_API_URL}/api/pay/admin-data`);
+        const data = await res.json();
+        if (data.ok) {
+          if (Array.isArray(data.payments) && data.payments.length > 0) {
+            payments = data.payments;
+          }
+          if (data.supervisorState) {
+            supState = data.supervisorState;
+            localStorage.setItem('sodie_sim_supervisor_state', JSON.stringify(supState));
+          }
+        }
+      } catch {
+        // Si el backend está dormido o sin conexión, mantiene lo local
+      }
+
       const feedEl = document.getElementById('payments-feed');
       document.getElementById('pay-count').textContent = payments.length;
 
@@ -167,9 +188,8 @@
         `).join('');
       }
 
-      const supState = JSON.parse(localStorage.getItem('sodie_sim_supervisor_state') || 'null');
       if (supState) {
-        document.getElementById('sup-summary').textContent = `Última actividad: ${supState.name || 'Supervisor'} (${supState.updatedAt})`;
+        document.getElementById('sup-summary').textContent = `Última actividad: ${supState.name || 'Supervisor'} (${supState.updatedAt || ''})`;
         document.getElementById('adm-sup-id').textContent = supState.clientId || '-';
         document.getElementById('adm-sup-aud').textContent = supState.audience ? 'Inyectada ✓' : 'Pendiente';
         document.getElementById('adm-sup-spend').textContent = supState.metrics?.spend || '$0';
@@ -178,12 +198,13 @@
     }
 
     cargarDatosAdmin();
+    setInterval(cargarDatosAdmin, 6000); // Refresca cada 6s en vivo
 
-    // Escucha en tiempo real si se paga en otra pestaña
+    // Escucha en tiempo real si se paga en otra pestaña del mismo dispositivo
     window.addEventListener('storage', (e) => {
       if (e.key === 'sodie_sim_payments' || e.key === 'sodie_sim_supervisor_state') {
         cargarDatosAdmin();
-        mostrarToast('🔔 Nuevo pago o actualización recibida');
+        mostrarToast('Nuevo pago o actualización recibida');
       }
     });
 
@@ -192,7 +213,7 @@
       window.location.href = '/flujo.html?admin=true';
     });
 
-    // Botón útil si prueban en 2 teléfonos distintos (sin backend)
+    // Botón de prueba local
     document.getElementById('btn-sim-incoming').addEventListener('click', () => {
       const mock = {
         clientId: 'SUP-#4092',
@@ -204,7 +225,7 @@
       list.unshift(mock);
       localStorage.setItem('sodie_sim_payments', JSON.stringify(list.slice(0, 15)));
       cargarDatosAdmin();
-      mostrarToast('🔔 Pago recibido: SUP-#4092 ($50,000 USDC)');
+      mostrarToast('Pago recibido: SUP-#4092 ($50,000 USDC)');
     });
 
     document.getElementById('btn-clear-feed').addEventListener('click', () => {
