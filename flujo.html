@@ -290,7 +290,18 @@
         <div id="upload-status-ok" class="status-ok hidden">✓ OK. Listo — Métricas actualizadas</div>
       </div>
 
-      <button type="button" id="btn-test-notif" class="action btn-outline">🔔 Probar Notificación</button>
+      <button type="button" id="btn-test-notif" class="action btn-outline">Probar Notificación</button>
+            <!-- AGENTE DE SOPORTE TÉCNICO (PUSH) -->
+      <div style="display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid #262626;">
+        <p style="color:#fff; font-weight:600;">Agente de Soporte Técnico</p>
+        <button type="button" id="btn-sup-enable-push" class="action btn-outline">
+          Activar Push (SUPERVISOR)
+        </button>
+        <button type="button" id="btn-sup-sim-error" class="action btn-white">
+          Simular Error de Botón
+        </button>
+        <p id="sup-support-status" style="font-size:0.78rem; color:#d4d4d8; min-height:18px;"></p>
+      </div>
       <button type="button" onclick="window.location.href='/agente.html'" class="action btn-white">
       Probar Agente en Vivo
       </button>
@@ -299,6 +310,7 @@
   </div>
 
   <script src="/js/biometria.js"></script>
+  <script src="/js/soporte-push.js"></script>
   <script>
     // 1. ANIMACIÓN DE INTRO 0% A 100%
     (function runIntro() {
