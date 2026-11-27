@@ -162,6 +162,70 @@
       responderPorIntent(intent);
     });
 
+        // RECONOCIMIENTO DE VOZ NATIVO (100% FRONTEND - ANDROID & IOS)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const btnMic = document.getElementById('btn-mic');
+
+    if (SpeechRecognition && btnMic) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'es-ES';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      let isListening = false;
+
+      btnMic.addEventListener('click', () => {
+        if (isListening) {
+          recognition.stop();
+          return;
+        }
+        // Calla al agente si estaba hablando antes de escucharte
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        orb.classList.remove('speaking');
+
+        try {
+          recognition.start();
+        } catch (err) {
+          stateEl.textContent = 'Toca el micrófono de nuevo';
+        }
+      });
+
+      recognition.onstart = () => {
+        isListening = true;
+        btnMic.textContent = '⏹';
+        btnMic.style.background = '#fff';
+        btnMic.style.color = '#000';
+        stateEl.textContent = '🎙️ Escuchando tu voz...';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const input = document.getElementById('agent-input');
+        if (input) input.value = transcript; // Muestra brevemente lo que entendió
+
+        const intent = detectarIntencion(transcript);
+        setTimeout(() => {
+          if (input) input.value = '';
+          responderPorIntent(intent);
+        }, 350);
+      };
+
+      recognition.onerror = (e) => {
+        stateEl.textContent = e.error === 'not-allowed'
+          ? 'Permiso de micrófono denegado'
+          : 'No te escuché bien, intenta de nuevo';
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        btnMic.textContent = '🎤';
+        btnMic.style.background = '#141414';
+        btnMic.style.color = '#fff';
+      };
+    } else if (btnMic) {
+      btnMic.style.display = 'none'; // Oculta el botón si el navegador no soporta voz
+    }
+
     // Silenciar / Activar voz
     const btnVoice = document.getElementById('btn-toggle-voice');
     btnVoice.addEventListener('click', () => {
