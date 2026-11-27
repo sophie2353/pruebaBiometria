@@ -112,6 +112,9 @@
       <button type="button" id="btn-enter-supervisor" class="btn-white">
         Entrar a Vista Supervisor ➔
       </button>
+      <button type="button" onclick="window.location.href='/agente.html'" class="action btn-white">
+       Probar Agente en Vivo
+      </button>
       <button type="button" id="btn-logout" class="btn-outline">Cerrar Sesión</button>
     </section>
   </div>
@@ -193,10 +196,6 @@
       localStorage.removeItem('sodie_sim_payments');
       cargarDatosAdmin();
     });
-
-    <button type="button" onclick="window.location.href='/agente.html'" class="action btn-white">
-  Probar Agente en Vivo
-      </button>
 
     document.getElementById('btn-logout').addEventListener('click', () => {
       SodieBiometria.cerrarSesion();
