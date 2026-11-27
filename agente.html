@@ -123,12 +123,12 @@
     <!-- OPCIONES DINÁMICAS DE CIERRE -->
     <div id="quick-replies" class="quick-replies"></div>
 
-    <!-- INPUT DE PREGUNTA LIBRE (MOTOR LOCAL SIN API) -->
+      <!-- INPUT DE PREGUNTA LIBRE + MICRÓFONO NATIVO -->
     <form id="agent-form" class="input-bar">
-      <input type="text" id="agent-input" placeholder="Escribe cualquier duda (precio, Meta, contrato...)" autocomplete="off" />
+      <button type="button" id="btn-mic" title="Hablar" style="padding:0 14px; background:#141414; color:#fff; border:1px solid #333;">🎤</button>
+      <input type="text" id="agent-input" placeholder="Habla o escribe tu duda..." autocomplete="off" />
       <button type="submit">➔</button>
     </form>
-  </div>
 
   <script src="/js/biometria.js"></script>
   <script src="/js/agente.js"></script>
