@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>S#1 • Acceso</title>
   <meta name="theme-color" content="#000000">
+
+  <!-- PWA & iOS -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="S#1">
+  <link rel="apple-touch-icon" href="/icon.jpg">
+
   <style>
     * { box-sizing: border-box; }
     body {
@@ -59,11 +67,20 @@
     button.action:active { opacity: 0.8; }
     .btn-white { background: #fff; color: #000; border: none; }
     .btn-outline { background: transparent; color: #fff; border: 1px solid #3f3f46; }
+    .btn-install {
+      background: #141414; color: #e4e4e7; border: 1px dashed #52525b;
+      padding: 11px; font-size: 0.8rem;
+    }
 
-    #bio-status {
+    #bio-status, #ios-install-tip {
       font-size: 0.8rem; text-align: center; color: #d4d4d8; min-height: 18px;
       line-height: 1.4;
     }
+    #ios-install-tip {
+      padding: 10px 12px; border-radius: 10px; background: #000; border: 1px solid #333;
+      font-size: 0.76rem; color: #a1a1aa;
+    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -91,6 +108,13 @@
       <button type="button" id="btn-bio-login" class="action btn-white">
         2. Entrar al Flujo ➔
       </button>
+      <button type="button" id="btn-install-pwa" class="action btn-install hidden">
+        ↓ Instalar App S#1
+      </button>
+    </div>
+
+    <div id="ios-install-tip" class="hidden">
+      En iPhone: toca el ícono <strong>Compartir (↑)</strong> en Safari y selecciona <strong>"Agregar a inicio"</strong>.
     </div>
 
     <div id="bio-status"></div>
@@ -101,6 +125,47 @@
     const statusEl = document.getElementById('bio-status');
     const userInput = document.getElementById('bio-user-id');
 
+    // Registro de Service Worker (obligatorio para PWA y Push)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+
+    // Lógica de instalación Web App (Android + iOS)
+    const btnInstall = document.getElementById('btn-install-pwa');
+    const iosTip = document.getElementById('ios-install-tip');
+    let deferredPrompt = null;
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (!isStandalone) {
+      // Android / Chrome
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        btnInstall.classList.remove('hidden');
+      });
+
+      // iPhone / Safari
+      if (isIOS) {
+        btnInstall.classList.remove('hidden');
+      }
+
+      btnInstall.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') btnInstall.classList.add('hidden');
+          deferredPrompt = null;
+        } else if (isIOS) {
+          iosTip.classList.toggle('hidden');
+        }
+      });
+    }
+
+    // Selector de Rol
     document.querySelectorAll('.role-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -110,16 +175,18 @@
       });
     });
 
+    // Registro Biométrico
     document.getElementById('btn-bio-register').addEventListener('click', async () => {
       statusEl.textContent = 'Esperando sensor biométrico...';
       const res = await SodieBiometria.registrar(userInput.value);
       statusEl.textContent = res.ok ? `✅ Biometría registrada para ${res.userId}.` : `❌ ${res.error}`;
     });
 
+    // Login Biométrico
     document.getElementById('btn-bio-login').addEventListener('click', async () => {
       statusEl.textContent = 'Validando biometría...';
       const res = await SodieBiometria.validar(userInput.value);
-            if (res.ok) {
+      if (res.ok) {
         window.location.href = res.role === 'ADMIN' ? '/panel.html' : '/flujo.html';
       } else {
         statusEl.textContent = `❌ ${res.error}`;
