@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>S#1 • Terminal</title>
   <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="/css/moods.css">
   <style>
     * { box-sizing: border-box; }
     body {
@@ -530,6 +531,11 @@
       guardarEstadoSupervisor({ metrics: newMetrics });
       mostrarToast('Listo — Métricas actualizadas');
     });
+
+      setTimeout(() => {
+        window.location.href = '/supervisor.html';
+      }, 1500);
+
 
     // Notificación y Logout
     document.getElementById('btn-test-notif').addEventListener('click', async () => {
