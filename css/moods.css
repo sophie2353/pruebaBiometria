@@ -1,0 +1,55 @@
+/* 1. MODO ORIGINAL (Blanco y Negro) */
+:root,
+[data-theme="original"] {
+  --bg: #000000;
+  --card: #0a0a0a;
+  --card-border: #262626;
+  --card-blur: none;
+  --text: #ffffff;
+  --sub: #a1a1aa;
+  --btn-bg: #ffffff;
+  --btn-text: #000000;
+  --accent: #ffffff;
+}
+
+/* 2. MODO OSCURO (Púrpura y Negro) */
+[data-theme="purple-dark"] {
+  --bg: radial-gradient(circle at top right, #1e0b36 0%, #050507 55%, #000000 100%);
+  --card: linear-gradient(160deg, rgba(20, 12, 34, 0.94), rgba(7, 7, 10, 0.98));
+  --card-border: rgba(168, 85, 247, 0.35);
+  --card-blur: none;
+  --text: #f4f4f5;
+  --sub: #a78bfa;
+  --btn-bg: linear-gradient(135deg, #7e22ce, #a855f7);
+  --btn-text: #ffffff;
+  --accent: #c084fc;
+}
+
+/* 3. MODO TRANSPARENTE (Glass + Botones Verde Menta) */
+[data-theme="glass-mint"] {
+  --bg: radial-gradient(circle at 20% 20%, #1a1033 0%, #071318 50%, #030508 100%);
+  --card: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(0, 255, 204, 0.28);
+  --card-blur: blur(16px);
+  --text: #ffffff;
+  --sub: #cbd5e1;
+  --btn-bg: #00ffcc;
+  --btn-text: #050507;
+  --accent: #00ffcc;
+}
+
+/* Aplicación automática a tus elementos actuales */
+body { background: var(--bg) !important; color: var(--text) !important; }
+.card, .topbar, .call-stage {
+  background: var(--card) !important;
+  border-color: var(--card-border) !important;
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+}
+.btn-white, .chip-btn.cta {
+  background: var(--btn-bg) !important;
+  color: var(--btn-text) !important;
+}
+.badge, .emblem-breath, .agent-orb {
+  border-color: var(--accent) !important;
+}
