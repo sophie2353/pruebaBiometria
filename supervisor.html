@@ -4,41 +4,313 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Supervisor | S#1</title>
+  <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="/css/moods.css">
   <style>
+    * { box-sizing: border-box; }
     body {
-      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: #0b0218; color: #fff; font-family: system-ui, sans-serif; padding: 16px;
+      margin: 0; min-height: 100vh; background: #000; color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 18px 46px 48px 16px; /* Espacio derecho para el switcher vertical */
     }
-    .card {
-      width: 100%; max-width: 400px; padding: 24px; border-radius: 16px; text-align: center;
-      background: rgba(217, 70, 239, 0.08); border: 1px solid #d946ef;
+    .shell {
+      width: 100%; max-width: 1120px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .topbar {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 14px 18px; border-radius: 16px; background: #0a0a0a; border: 1px solid #262626;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: 1.5px; }
+    .emblem-sm {
+      width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #fff;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;
     }
     .badge {
-      display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem;
-      background: rgba(217, 70, 239, 0.2); color: #f0abfc; margin-bottom: 10px;
+      font-size: 0.72rem; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid #fff; font-weight: 700; letter-spacing: 0.5px;
     }
-    button {
-      margin-top: 16px; padding: 10px 18px; border-radius: 10px; border: none;
-      background: #ff007a; color: #fff; font-weight: 700; cursor: pointer;
+
+    /* GRID DE BLOQUES: 2 A 3 COLUMNAS */
+    .blocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
     }
+    .sup-block {
+      padding: 20px; border-radius: 18px; background: #0a0a0a; border: 1px solid #262626;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .span-full { grid-column: 1 / -1; }
+    h2 { margin: 0; font-size: 1rem; letter-spacing: 0.3px; }
+    p { margin: 0; font-size: 0.82rem; color: var(--sub, #a1a1aa); line-height: 1.45; }
+
+    /* FILTROS MULTI-CLIENTE (1, 2, 3, 4 O COMBINADOS) */
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+    .client-chip {
+      padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;
+      background: #000; color: #e4e4e7; border: 1px solid #333; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .client-chip.active { background: #fff; color: #000; border-color: #fff; }
+
+    /* MÉTRICAS CONSOLIDADAS */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+    }
+    .kpi-box {
+      padding: 14px; border-radius: 12px; background: rgba(0, 0, 0, 0.55); border: 1px solid #262626;
+    }
+    .kpi-box span { display: block; font-size: 0.72rem; color: var(--sub, #8e8e93); margin-bottom: 4px; }
+    .kpi-box strong { font-size: 1.35rem; letter-spacing: 0.5px; }
+
+    /* TARJETAS DE CLIENTES ACTIVOS */
+    .clients-mini-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;
+    }
+    .client-card {
+      padding: 14px; border-radius: 14px; background: rgba(0, 0, 0, 0.55); border: 1px solid #262626;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .client-card-head { display: flex; justify-content: space-between; align-items: center; }
+    .client-card strong { font-size: 0.92rem; }
+    .client-card small { font-size: 0.75rem; color: var(--sub, #a1a1aa); }
+
+    /* FEED DE PAGOS $50K */
+    .pay-feed { display: flex; flex-direction: column; gap: 8px; max-height: 210px; overflow-y: auto; }
+    .pay-item {
+      padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.55);
+      border: 1px solid #262626; border-left: 3px solid var(--accent, #fff);
+      display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem;
+    }
+
+    button.action {
+      width: 100%; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-white { background: #fff; color: #000; border: none; }
+    .btn-outline { background: transparent; color: #fff; border: 1px solid #3f3f46; }
+
+    /* TOAST DE CASCADA DE PAGOS */
+    .toast {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+      width: 90%; max-width: 390px; padding: 13px 16px; border-radius: 14px;
+      background: var(--btn-bg, #fff); color: var(--btn-text, #000);
+      font-size: 0.84rem; font-weight: 700; text-align: center; z-index: 9999;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <main class="card">
-    <span class="badge">NIVEL SUPERVISOR • SOLO LECTURA / OPERACIÓN</span>
-    <h2 style="color:#00ffcc; margin-top:0;">Panel de Supervisión</h2>
-    <p id="sup-user-info">Verificando sesión...</p>
-    <button type="button" id="btn-logout">Cerrar Sesión</button>
-  </main>
+  <div id="sup-toast" class="toast hidden"></div>
+
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="emblem-sm">S</span>
+        <span>S#1 SUPERVISOR</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span id="sup-user-badge" class="badge">VERIFICANDO...</span>
+        <button type="button" id="btn-back-admin" class="btn-outline hidden" style="padding:6px 12px; border-radius:9px; font-size:0.75rem; cursor:pointer;">← Admin</button>
+      </div>
+    </header>
+
+    <div class="blocks-grid">
+      <!-- BLOQUE 1 (ANCHO COMPLETO): SELECTOR MULTI-CLIENTE + MÉTRICAS CONSOLIDADAS -->
+      <section class="sup-block span-full">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            <h2>Monitor Multi-Cliente (Cupos Activos)</h2>
+            <p>Toca 1 cliente, combina varios (ej. 2 o 3) o selecciona Todos para consolidar métricas.</p>
+          </div>
+          <span id="selected-count-pill" class="badge">4 ACTIVOS</span>
+        </div>
+
+        <div class="filter-bar" id="client-filters">
+          <button type="button" class="client-chip active" data-filter="ALL">Todos (4)</button>
+          <button type="button" class="client-chip" data-filter="C1">Cliente #1</button>
+          <button type="button" class="client-chip" data-filter="C2">Cliente #2</button>
+          <button type="button" class="client-chip" data-filter="C3">Cliente #3</button>
+          <button type="button" class="client-chip" data-filter="C4">Cliente #4</button>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-box"><span>Licencias Cobradas</span><strong id="kpi-licenses">$200,000</strong></div>
+          <div class="kpi-box"><span>Inversión en Pauta</span><strong id="kpi-spend">$0</strong></div>
+          <div class="kpi-box"><span>Alcance Total</span><strong id="kpi-reach">0</strong></div>
+          <div class="kpi-box"><span>Visitas Web</span><strong id="kpi-visits">0</strong></div>
+          <div class="kpi-box"><span>Tráfico Activo</span><strong id="kpi-active">0</strong></div>
+        </div>
+
+        <div class="clients-mini-grid" id="clients-cards-container"></div>
+      </section>
+
+      <!-- BLOQUE 2: PAGOS RECIBIDOS (4x $50K EN CASCADA) -->
+      <section class="sup-block">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2>Pagos Confirmados ($50K)</h2>
+          <span id="pay-feed-count" class="badge">0</span>
+        </div>
+        <div id="sup-pay-feed" class="pay-feed"></div>
+        <button type="button" id="btn-replay-payments" class="action btn-outline">↻ Repetir Simulación 4 Pagos</button>
+      </section>
+
+      <!-- BLOQUE 3: AGENTE DE SOPORTE PUSH -->
+      <section class="sup-block">
+        <h2>Agente de Soporte (Push)</h2>
+        <p>Prueba el reporte de fallo hacia Admin y recibe el aviso Push al resolverse.</p>
+        <button type="button" id="btn-sup-enable-push" class="action btn-outline">1. Activar Push (SUPERVISOR)</button>
+        <button type="button" id="btn-sup-sim-error" class="action btn-white">2. Simular Error de Botón</button>
+        <p id="sup-support-status" style="min-height:18px;"></p>
+      </section>
+
+      <!-- BLOQUE 4: ACCESOS RÁPIDOS -->
+      <section class="sup-block">
+        <h2>Operación y Salida</h2>
+        <p>Prueba el agente de cierre con el mood configurado o vuelve al flujo inicial.</p>
+        <button type="button" onclick="window.location.href='/agente.html'" class="action btn-white">Probar Agente en Vivo ➔</button>
+        <button type="button" onclick="window.location.href='/flujo.html'" class="action btn-outline">Volver al Flujo</button>
+        <button type="button" id="btn-logout" class="action btn-outline">Cerrar Sesión</button>
+      </section>
+    </div>
+  </div>
 
   <script src="/js/biometria.js"></script>
+  <script src="/js/soporte-push.js"></script>
+  <script src="/js/moods.js"></script>
   <script>
+    
     const sesion = SodieBiometria.obtenerSesion();
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true' || (sesion && sesion.role === 'ADMIN');
+
     if (!sesion || (sesion.role !== 'SUPERVISOR' && sesion.role !== 'ADMIN')) {
       window.location.href = '/index.html';
     } else {
-      document.getElementById('sup-user-info').textContent = `Validado: ${sesion.userId} (${sesion.role})`;
+      document.getElementById('sup-user-badge').textContent = isAdmin ? 'ADMIN → SUPERVISOR' : sesion.role;
+      if (isAdmin) {
+        const btnBack = document.getElementById('btn-back-admin');
+        btnBack.classList.remove('hidden');
+        btnBack.addEventListener('click', () => { window.location.href = '/panel.html'; });
+      }
     }
+
+    // 4 CLIENTES SIMULADOS ($50,000 CADA UNO)
+    const CLIENTS_DATA = {
+      C1: { id: 'CLIENT-#01', name: 'Apex Real Estate', wallet: 'VaultX Corporate', license: 50000, spend: 4850, reach: 74200, visits: 1640, active: 46 },
+      C2: { id: 'CLIENT-#02', name: 'Nova SaaS B2B',    wallet: 'Aegis Pay',        license: 50000, spend: 3120, reach: 51800, visits: 1190, active: 31 },
+      C3: { id: 'CLIENT-#03', name: 'Kinetix Capital',  wallet: 'Nexus Custody',    license: 50000, spend: 7400, reach: 128500, visits: 2980, active: 68 },
+      C4: { id: 'CLIENT-#04', name: 'Vanguard Clinic',  wallet: 'Obsidian Wallet',  license: 50000, spend: 2290, reach: 38900, visits: 870,  active: 22 }
+    };
+
+    let selectedKeys = ['C1', 'C2', 'C3', 'C4'];
+
+    function mostrarToast(msg) {
+      const t = document.getElementById('sup-toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.add('hidden'), 2600);
+    }
+
+    function renderMetrics() {
+      let totLic = 0, totSpend = 0, totReach = 0, totVisits = 0, totActive = 0;
+
+      const cardsHtml = selectedKeys.map((k) => {
+        const c = CLIENTS_DATA[k];
+        totLic += c.license;
+        totSpend += c.spend;
+        totReach += c.reach;
+        totVisits += c.visits;
+        totActive += c.active;
+
+        return `
+          <div class="client-card">
+            <div class="client-card-head">
+              <strong>${c.id}</strong>
+              <span class="badge">$50K OK</span>
+            </div>
+            <small>${c.name} • ${c.wallet}</small>
+            <small>Pauta: <b>$${c.spend.toLocaleString()}</b> • Alcance: <b>${c.reach.toLocaleString()}</b></small>
+            <small>Visitas: <b>${c.visits.toLocaleString()}</b> • Activos: <b>${c.active}</b></small>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('clients-cards-container').innerHTML = cardsHtml;
+      document.getElementById('selected-count-pill').textContent = `${selectedKeys.length} SELECCIONADO${selectedKeys.length > 1 ? 'S' : ''}`;
+      document.getElementById('kpi-licenses').textContent = `$${totLic.toLocaleString()}`;
+      document.getElementById('kpi-spend').textContent = `$${totSpend.toLocaleString()}`;
+      document.getElementById('kpi-reach').textContent = totReach.toLocaleString();
+      document.getElementById('kpi-visits').textContent = totVisits.toLocaleString();
+      document.getElementById('kpi-active').textContent = totActive.toLocaleString();
+    }
+
+    // MULTI-SELECCIÓN FLEXIBLE (1, 2, 3 O TODOS)
+    const filterButtons = document.querySelectorAll('#client-filters .client-chip');
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.filter;
+        const allBtn = document.querySelector('[data-filter="ALL"]');
+
+        if (val === 'ALL') {
+          selectedKeys = ['C1', 'C2', 'C3', 'C4'];
+          filterButtons.forEach(b => b.classList.remove('active'));
+          allBtn.classList.add('active');
+        } else {
+          // Si venía de "Todos", empieza solo con el que tocó
+          if (allBtn.classList.contains('active')) {
+            allBtn.classList.remove('active');
+            selectedKeys = [val];
+            btn.classList.add('active');
+          } else {
+            if (selectedKeys.includes(val)) {
+              if (selectedKeys.length > 1) {
+                selectedKeys = selectedKeys.filter(k => k !== val);
+                btn.classList.remove('active');
+              }
+            } else {
+              selectedKeys.push(val);
+              btn.classList.add('active');
+            }
+            if (selectedKeys.length === 4) {
+              filterButtons.forEach(b => b.classList.remove('active'));
+              allBtn.classList.add('active');
+            }
+          }
+        }
+        renderMetrics();
+      });
+    });
+
+    // SIMULACIÓN EN CASCADA DE LOS 4 PAGOS DE $50,000 AL ENTRAR
+    function lanzarCascadaPagos() {
+      const feed = document.getElementById('sup-pay-feed');
+      const countEl = document.getElementById('pay-feed-count');
+      feed.innerHTML = '';
+      countEl.textContent = '0';
+
+      const keys = ['C1', 'C2', 'C3', 'C4'];
+      keys.forEach((k, idx) => {
+        setTimeout(() => {
+          const c = CLIENTS_DATA[k];
+          const item = document.createElement('div');
+          item.className = 'pay-item';
+          item.innerHTML = `
+            <div><strong>${c.id} • $50,000 USDC</strong><br><small style="color:var(--sub);">${c.name} (${c.wallet})</small></div>
+            <span class="badge">OK</span>
+          `;
+          feed.prepend(item);
+          countEl.textContent = String(idx + 1);
+          mostrarToast(`Pago recibido: ${c.id} ($50,000 USDC)`);
+        }, (idx + 1) * 900);
+      });
+    }
+
+    renderMetrics();
+    lanzarCascadaPagos();
+
+    document.getElementById('btn-replay-payments').addEventListener('click', lanzarCascadaPagos);
 
     document.getElementById('btn-logout').addEventListener('click', () => {
       SodieBiometria.cerrarSesion();
