@@ -1,4 +1,7 @@
-/* 1. MODO ORIGINAL (Blanco y Negro) */
+/* =========================================================
+   S#1 - SISTEMA DE 3 MOODS + SWITCHER VERTICAL
+   1. original (abajo) -> 2. purple-dark (medio) -> 3. glass-mint (arriba)
+   ========================================================= */
 :root,
 [data-theme="original"] {
   --bg: #000000;
@@ -12,24 +15,22 @@
   --accent: #ffffff;
 }
 
-/* 2. MODO OSCURO (Púrpura y Negro) */
 [data-theme="purple-dark"] {
-  --bg: radial-gradient(circle at top right, #1e0b36 0%, #050507 55%, #000000 100%);
-  --card: linear-gradient(160deg, rgba(20, 12, 34, 0.94), rgba(7, 7, 10, 0.98));
-  --card-border: rgba(168, 85, 247, 0.35);
+  --bg: radial-gradient(circle at top right, #230a3d 0%, #08040e 55%, #000000 100%);
+  --card: linear-gradient(160deg, rgba(24, 12, 42, 0.94), rgba(8, 6, 12, 0.98));
+  --card-border: rgba(168, 85, 247, 0.4);
   --card-blur: none;
   --text: #f4f4f5;
-  --sub: #a78bfa;
+  --sub: #c4b5fd;
   --btn-bg: linear-gradient(135deg, #7e22ce, #a855f7);
   --btn-text: #ffffff;
   --accent: #c084fc;
 }
 
-/* 3. MODO TRANSPARENTE (Glass + Botones Verde Menta) */
 [data-theme="glass-mint"] {
-  --bg: radial-gradient(circle at 20% 20%, #1a1033 0%, #071318 50%, #030508 100%);
+  --bg: radial-gradient(circle at 20% 20%, #1a1033 0%, #071318 52%, #030508 100%);
   --card: rgba(255, 255, 255, 0.06);
-  --card-border: rgba(0, 255, 204, 0.28);
+  --card-border: rgba(0, 255, 204, 0.32);
   --card-blur: blur(16px);
   --text: #ffffff;
   --sub: #cbd5e1;
@@ -38,18 +39,74 @@
   --accent: #00ffcc;
 }
 
-/* Aplicación automática a tus elementos actuales */
-body { background: var(--bg) !important; color: var(--text) !important; }
-.card, .topbar, .call-stage {
+/* Aplicación automática a todas las vistas */
+body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  transition: background 0.35s ease;
+}
+
+.card, .topbar, .call-stage, .sup-block {
   background: var(--card) !important;
   border-color: var(--card-border) !important;
   backdrop-filter: var(--card-blur);
   -webkit-backdrop-filter: var(--card-blur);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
-.btn-white, .chip-btn.cta {
+
+.btn-white, .chip-btn.cta, .client-chip.active {
   background: var(--btn-bg) !important;
   color: var(--btn-text) !important;
-}
-.badge, .emblem-breath, .agent-orb {
   border-color: var(--accent) !important;
+}
+
+.badge, .emblem-breath, .agent-orb, .emblem-sm {
+  border-color: var(--accent) !important;
+}
+
+/* SWITCHER VERTICAL FLOTANTE (DERECHA, DE ABAJO HACIA ARRIBA) */
+.mood-vertical-rail {
+  position: fixed;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 88px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(15, 15, 20, 0.85);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(10px);
+  z-index: 9998;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+}
+
+.mood-vertical-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease;
+}
+
+/* 1. Original (Abajo) */
+[data-theme="original"] .mood-vertical-thumb {
+  transform: translateY(0px);
+  background: #ffffff;
+}
+/* 2. Morado Oscuro (Medio) */
+[data-theme="purple-dark"] .mood-vertical-thumb {
+  transform: translateY(-30px);
+  background: #c084fc;
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.7);
+}
+/* 3. Transparente Glass + Menta (Arriba) */
+[data-theme="glass-mint"] .mood-vertical-thumb {
+  transform: translateY(-60px);
+  background: #00ffcc;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
 }
