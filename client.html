@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Cliente | S#1</title>
+  <meta name="theme-color" content="#000000">
+  <link rel="stylesheet" href="/css/moods.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; background: #000; color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 18px 46px 48px 16px; /* Espacio derecho para el switcher vertical */
+    }
+    .shell {
+      width: 100%; max-width: 1120px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .topbar {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 14px 18px; border-radius: 16px; background: #0a0a0a; border: 1px solid #262626;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: 1.5px; }
+    .emblem-sm {
+      width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #fff;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem;
+    }
+    .badge {
+      font-size: 0.72rem; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid #fff; font-weight: 700; letter-spacing: 0.5px;
+    }
+
+    /* GRID DE BLOQUES: 2 A 3 COLUMNAS */
+    .blocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .sup-block {
+      padding: 20px; border-radius: 18px; background: #0a0a0a; border: 1px solid #262626;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .span-full { grid-column: 1 / -1; }
+    h2 { margin: 0; font-size: 1rem; letter-spacing: 0.3px; }
+    p { margin: 0; font-size: 0.82rem; color: var(--sub, #a1a1aa); line-height: 1.45; }
+
+    /* KPIs */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 10px;
+    }
+    .kpi-box {
+      padding: 14px; border-radius: 12px; background: rgba(0, 0, 0, 0.55); border: 1px solid #262626;
+    }
+    .kpi-box span { display: block; font-size: 0.72rem; color: var(--sub, #8e8e93); margin-bottom: 4px; }
+    .kpi-box strong { font-size: 1.35rem; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; }
+
+    /* TEMPORIZADOR 72H */
+    .timer-display {
+      padding: 16px; border-radius: 14px; background: rgba(0, 0, 0, 0.55);
+      border: 1px solid #262626; text-align: center;
+    }
+    .timer-display strong {
+      font-size: 1.85rem; letter-spacing: 2px; font-variant-numeric: tabular-nums; display: block;
+    }
+    .timer-display small { font-size: 0.74rem; color: var(--sub, #a1a1aa); }
+
+    /* LISTA DE CAMPAÑAS POR ACTIVAR */
+    .camp-list { display: flex; flex-direction: column; gap: 10px; }
+    .camp-item {
+      padding: 12px 14px; border-radius: 12px; background: rgba(0, 0, 0, 0.55);
+      border: 1px solid #262626; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .camp-item strong { display: block; font-size: 0.86rem; }
+    .camp-item small { font-size: 0.74rem; color: var(--sub, #a1a1aa); }
+    .btn-mini {
+      padding: 7px 12px; border-radius: 9px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* PROTOCOLO DE MADURACIÓN */
+    .status-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; }
+    .status-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.55); border: 1px solid #262626;
+    }
+
+    button.action {
+      width: 100%; padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    }
+    .btn-white { background: #fff; color: #000; border: none; }
+    .btn-outline { background: transparent; color: #fff; border: 1px solid #3f3f46; }
+
+    .toast {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+      width: 90%; max-width: 390px; padding: 13px 16px; border-radius: 14px;
+      background: var(--btn-bg, #fff); color: var(--btn-text, #000);
+      font-size: 0.84rem; font-weight: 700; text-align: center; z-index: 9999;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="client-toast" class="toast hidden"></div>
+
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="emblem-sm">S</span>
+        <span>S#1 CLIENTE</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span id="client-role-badge" class="badge">CLIENT-#01</span>
+        <button type="button" id="btn-back-admin" class="btn-outline hidden" style="padding:6px 12px; border-radius:9px; font-size:0.75rem; cursor:pointer;">← Admin</button>
+      </div>
+    </header>
+
+    <div class="blocks-grid">
+      <!-- BLOQUE 1 (ANCHO COMPLETO): MÉTRICAS ALEATORIAS EN VIVO -->
+      <section class="sup-block span-full">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div>
+            <h2>Métricas de Rendimiento en Vivo</h2>
+            <p>Lectura sincronizada del ciclo activo. Toca actualizar para simular nueva telemetría.</p>
+          </div>
+          <button type="button" id="btn-randomize-metrics" class="btn-outline btn-mini">↻ Nueva Lectura</button>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-box"><span>Inversión Activa</span><strong id="c-spend">$0</strong></div>
+          <div class="kpi-box"><span>Alcance Total</span><strong id="c-reach">0</strong></div>
+          <div class="kpi-box"><span>Visitas Web</span><strong id="c-visits">0</strong></div>
+          <div class="kpi-box"><span>Tráfico Activo</span><strong id="c-active">0</strong></div>
+          <div class="kpi-box"><span>ROAS Estimado</span><strong id="c-roas">0.0x</strong></div>
+        </div>
+      </section>
+
+      <!-- BLOQUE 2: TIEMPO DE CICLO (72H) Y RADAR (4H) -->
+      <section class="sup-block">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2>Ciclo de Operación (72h)</h2>
+          <span class="badge">EN CURSO</span>
+        </div>
+        <p>Tiempo restante para la siguiente inyección automática de borradores.</p>
+
+        <div class="timer-display">
+          <strong id="cycle-timer">71:59:59</strong>
+          <small>Próximo radar de optimización en <b id="radar-timer">03:59:59</b></small>
+        </div>
+      </section>
+
+      <!-- BLOQUE 3: CAMPAÑAS POR ACTIVAR -->
+      <section class="sup-block">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2>Campañas por Activar</h2>
+          <span id="pending-count" class="badge">3 PENDIENTES</span>
+        </div>
+        <p>Borradores estructurados listos para pasar a fase de maduración.</p>
+
+        <div class="camp-list" id="campaigns-list">
+          <div class="camp-item" data-camp="1">
+            <div>
+              <strong>Campaña #01 • Tráfico Frío</strong>
+              <small>Presupuesto: $150/día • Borrador</small>
+            </div>
+            <button type="button" class="btn-white btn-mini btn-activate-camp">Activar</button>
+          </div>
+          <div class="camp-item" data-camp="2">
+            <div>
+              <strong>Campaña #02 • Retargeting 7D</strong>
+              <small>Presupuesto: $90/día • Borrador</small>
+            </div>
+            <button type="button" class="btn-white btn-mini btn-activate-camp">Activar</button>
+          </div>
+          <div class="camp-item" data-camp="3">
+            <div>
+              <strong>Campaña #03 • Cierre Directo</strong>
+              <small>Presupuesto: $210/día • Borrador</small>
+            </div>
+            <button type="button" class="btn-white btn-mini btn-activate-camp">Activar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOQUE 4: PROTOCOLO DE MADURACIÓN Y AUDIENCIA -->
+      <section class="sup-block">
+        <h2>Protocolo de Maduración (4–48h)</h2>
+        <p>Estado actual de la cuenta y segmentación inyectada.</p>
+
+        <div class="status-list">
+          <div class="status-row">
+            <span>Audiencia Base</span>
+            <strong>Inyectada ✓</strong>
+          </div>
+          <div class="status-row">
+            <span>Creación en Pausa</span>
+            <strong>Protegido ✓</strong>
+          </div>
+          <div class="status-row">
+            <span>Radar Automático</span>
+            <strong>Cada 4 horas</strong>
+          </div>
+          <div class="status-row">
+            <span>Notificaciones Push</span>
+            <strong>Sincronizado</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOQUE 5: AGENTE DE SOPORTE PUSH Y ACCESOS -->
+      <section class="sup-block">
+        <h2>Soporte Técnico y Agente</h2>
+        <p>Reporta fallos al instante o abre el agente de voz en vivo.</p>
+
+        <button type="button" id="btn-sup-enable-push" class="action btn-outline">1. Activar Push</button>
+        <button type="button" id="btn-sup-sim-error" class="action btn-white">2. Simular Error de Botón</button>
+        <p id="sup-support-status" style="min-height:18px;"></p>
+
+        <button type="button" onclick="window.location.href='/agente.html'" class="action btn-outline">Probar Agente en Vivo ➔</button>
+        <button type="button" id="btn-logout" class="action btn-outline">Cerrar Sesión</button>
+      </section>
+    </div>
+  </div>
+
+  <script src="/js/biometria.js"></script>
+  <script src="/js/soporte-push.js"></script>
+  <script src="/js/moods.js"></script>
+  <script>
+    const sesion = SodieBiometria.obtenerSesion();
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true' || (sesion && sesion.role === 'ADMIN');
+
+    // Bypass total para ADMIN; si no es ADMIN ni tiene sesión, vuelve a index
+    if (!isAdmin && !sesion) {
+      window.location.href = '/index.html';
+    } else {
+      const badge = document.getElementById('client-role-badge');
+      if (isAdmin) {
+        badge.textContent = 'ADMIN → CLIENT-#01';
+        const btnBack = document.getElementById('btn-back-admin');
+        btnBack.classList.remove('hidden');
+        btnBack.addEventListener('click', () => { window.location.href = '/panel.html'; });
+      } else {
+        badge.textContent = sesion.userId || 'CLIENT-#01';
+      }
+    }
+
+    function mostrarToast(msg) {
+      const t = document.getElementById('client-toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(window._cToast);
+      window._cToast = setTimeout(() => t.classList.add('hidden'), 2600);
+    }
+
+    // 1. MÉTRICAS ALEATORIAS REALISTAS
+    function generarMetricasAzar() {
+      const spend = Math.floor(Math.random() * 6800) + 1200;
+      const reach = Math.floor(Math.random() * 95000) + 18000;
+      const visits = Math.floor(reach * (0.018 + Math.random() * 0.02));
+      const active = Math.floor(Math.random() * 65) + 12;
+      const roas = (2.4 + Math.random() * 3.8).toFixed(1);
+
+      document.getElementById('c-spend').textContent = `$${spend.toLocaleString('en-US')}`;
+      document.getElementById('c-reach').textContent = reach.toLocaleString('en-US');
+      document.getElementById('c-visits').textContent = visits.toLocaleString('en-US');
+      document.getElementById('c-active').textContent = active;
+      document.getElementById('c-roas').textContent = `${roas}x`;
+    }
+
+    generarMetricasAzar();
+    document.getElementById('btn-randomize-metrics').addEventListener('click', () => {
+      generarMetricasAzar();
+      mostrarToast('Métricas actualizadas en tiempo real');
+    });
+
+    // 2. TEMPORIZADOR EN VIVO (CICLO 72H Y RADAR 4H)
+    let cycleSeconds = (71 * 3600) + (Math.floor(Math.random() * 50) * 60) + 45;
+    let radarSeconds = (3 * 3600) + (Math.floor(Math.random() * 50) * 60) + 20;
+
+    function formatTime(sec) {
+      const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    setInterval(() => {
+      if (cycleSeconds > 0) cycleSeconds--;
+      if (radarSeconds > 0) radarSeconds--;
+      else radarSeconds = 4 * 3600;
+      document.getElementById('cycle-timer').textContent = formatTime(cycleSeconds);
+      document.getElementById('radar-timer').textContent = formatTime(radarSeconds);
+    }, 1000);
+
+    // 3. ACTIVAR CAMPAÑAS PENDIENTES
+    let pending = 3;
+    document.querySelectorAll('.btn-activate-camp').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        btn.disabled = true;
+        btn.textContent = 'ACTIVA ✓';
+        btn.classList.remove('btn-white');
+        btn.classList.add('btn-outline');
+        pending = Math.max(0, pending - 1);
+        document.getElementById('pending-count').textContent = pending === 0 ? 'TODAS ACTIVAS' : `${pending} PENDIENTE${pending > 1 ? 'S' : ''}`;
+        mostrarToast('Campaña activada y enviada a maduración (4–48h)');
+      });
+    });
+
+    // 4. CERRAR SESIÓN
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      SodieBiometria.cerrarSesion();
+      window.location.href = '/index.html';
+    });
+  </script>
+</body>
+</html>
