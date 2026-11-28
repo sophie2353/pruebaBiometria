@@ -151,7 +151,7 @@
 
       recognition.onstart = () => {
         isListening = true;
-        btnMic.textContent = '⏹';
+        btnMic.classList.add('listening');
         btnMic.style.background = '#fff';
         btnMic.style.color = '#000';
         stateEl.textContent = '🎙️ Escuchando tu voz...';
@@ -177,7 +177,7 @@
 
       recognition.onend = () => {
         isListening = false;
-        btnMic.textContent = '🎤';
+        btnMic.classList.remove('listening');
         btnMic.style.background = '#141414';
         btnMic.style.color = '#fff';
       };
