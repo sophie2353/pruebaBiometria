@@ -4,7 +4,7 @@
  */
 (() => {
   // 👇 PEGA AQUÍ LA URL DE TU BACKEND DE PRUEBA EN RENDER (sin barra al final)
-  const API_URL = 'https://TU-BACKEND-DE-PRUEBA.onrender.com';
+  const API_URL = 'https://apisimulacion-3re4.onrender.com';
 
   function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
